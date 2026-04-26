@@ -15,7 +15,7 @@
 
 ActiveCampaign's UI is fine for *running* campaigns. It's frustrating for *understanding* them. The reports are scattered, the segment builder is fiddly, and there's no way to ask "of the contacts who joined in March, what % opened anything since?" without exporting CSVs and pivoting them yourself.
 
-This skill plugs the v3 API into a Claude agent so you can just ask the question. It already knows your lists, tags, custom fields, automations, pipelines, and 90 days of campaign baselines (because calibration scans them once at install time). When you ask "find me my hottest leads" or "which subject lines actually work" or "are there dead tags I should clean up," it runs the right report against your real data and gives you a marker-friendly markdown summary.
+This skill plugs the v3 API into the OpenClaw agent so you can just ask the question. It already knows your lists, tags, custom fields, automations, pipelines, and 90 days of campaign baselines (because calibration scans them once at install time). When you ask "find me my hottest leads" or "which subject lines actually work" or "are there dead tags I should clean up," it runs the right report against your real data and gives you a marker-friendly markdown summary.
 
 ## What it can do
 
@@ -103,7 +103,7 @@ openclaw gateway restart
 python3 ~/.openclaw/skills/activecampaign/scripts/calibrate.py
 
 # 4. Try it
-#    In a Claude session, ask: "Run a list health audit on my AC account"
+#    In an OpenClaw session, ask: "Run a list health audit on my AC account"
 ```
 
 Full instructions: [INSTALL.md](INSTALL.md)
