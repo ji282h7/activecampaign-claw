@@ -32,13 +32,13 @@ def _parse_iso(s):
         return None
 
 
-def fetch(client: ACClient, max_events: int) -> dict:
-    contacts = client.paginate("contacts", "contacts", max_items=20000)
+def fetch(client: ACClient, max_events: int, max_contacts: int = 20000) -> dict:
+    contacts = client.stream("contacts", "contacts", max_items=max_contacts)
     activities = client.fetch_engagement_events(max_items=max_events)
     return {"contacts": contacts, "activities": activities}
 
 
-def analyze(data: dict, window_days: int) -> dict:
+def analyze(data: dict, window_days: int, sample_size: int = 50) -> dict:
     cutoff = datetime.now(timezone.utc) - timedelta(days=window_days)
     last_engage = {}
     for a in data["activities"]:
@@ -55,29 +55,43 @@ def analyze(data: dict, window_days: int) -> dict:
         if not cur or ts > cur:
             last_engage[cid] = ts
 
-    stale = []
-    fresh = []
-    no_engagement = []
+    # Stream-friendly: counters + bounded samples instead of full per-contact lists.
     # AC's /contacts.status is null per-contact (status lives on /contactLists membership).
     # We treat all contacts as in-scope; users can filter by list separately.
+    active_contacts = 0
+    fresh_count = 0
+    stale_count = 0
+    no_engagement_count = 0
+    stale_sample = []
+    no_engagement_sample = []
+
     for c in data["contacts"]:
+        active_contacts += 1
         cid = str(c["id"])
         last = last_engage.get(cid)
         if last is None:
-            no_engagement.append({"id": cid, "email": c.get("email"), "cdate": c.get("cdate")})
+            no_engagement_count += 1
+            if len(no_engagement_sample) < sample_size:
+                no_engagement_sample.append({
+                    "id": cid, "email": c.get("email"), "cdate": c.get("cdate"),
+                })
         elif last < cutoff:
-            stale.append({"id": cid, "email": c.get("email"), "last_engaged": last.isoformat()})
+            stale_count += 1
+            if len(stale_sample) < sample_size:
+                stale_sample.append({
+                    "id": cid, "email": c.get("email"), "last_engaged": last.isoformat(),
+                })
         else:
-            fresh.append({"id": cid, "email": c.get("email"), "last_engaged": last.isoformat()})
+            fresh_count += 1
 
     return {
         "window_days": window_days,
-        "active_contacts": len(data["contacts"]),
-        "fresh_count": len(fresh),
-        "stale_count": len(stale),
-        "no_engagement_count": len(no_engagement),
-        "stale": stale,
-        "no_engagement": no_engagement,
+        "active_contacts": active_contacts,
+        "fresh_count": fresh_count,
+        "stale_count": stale_count,
+        "no_engagement_count": no_engagement_count,
+        "stale": stale_sample,
+        "no_engagement": no_engagement_sample,
     }
 
 

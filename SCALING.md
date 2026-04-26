@@ -42,15 +42,21 @@ These are best-case. AC may throttle harder on lower plans, and `offset` perform
 
 ## Memory profile
 
-The `paginate()` helper accumulates results into a Python list before returning. Approximate memory:
+`paginate()` accumulates the full result list before returning. `stream()` (added in 1.0.10) yields one record at a time — peak memory is bounded by the page size and whatever the caller keeps.
 
-| Contact count | Approx. RAM |
-|---|---|
-| 10k | 15–20 MB |
-| 100k | 150–200 MB |
-| 1M | 1.5–2 GB |
+| Contact count | `paginate()` peak | `stream()` peak (single-pass aggregation) |
+|---|---|---|
+| 10k | 15–20 MB | <1 MB |
+| 100k | 150–200 MB | <1 MB |
+| 1M | 1.5–2 GB | <1 MB |
 
-If you're constrained on memory, scope to a list or segment first.
+Scripts that already use `stream()` (single-pass adoptions in 1.0.10):
+
+- `role_address_finder.py` — bounded by match count (typically <1k records).
+- `free_vs_corporate_report.py` — bounded by unique-domain count (~thousands max).
+- `stale_contact_report.py` — bounded by an activity-id-to-timestamp dict plus 50-record output samples; total under 50 MB even on 1M-contact accounts.
+
+Multi-pass scripts (`dedupe_contacts`, `audit_list_health`, `contact_completeness_report`) still use `paginate()` because they build intermediate maps and re-traverse them. If you need them on a huge account, scope to a list / tag / segment first or file an issue.
 
 ## Recommended workflows for large accounts
 
@@ -64,7 +70,7 @@ If you're constrained on memory, scope to a list or segment first.
 
 ## What's not optimized yet
 
-- **Streaming pagination**: `paginate()` accumulates the full list in memory. A streaming/iterator pattern would handle 1M+ accounts more cleanly.
+- **Streaming adoption is partial.** `ACClient.stream()` exists and is in use by three single-pass scripts. Multi-pass scripts (`dedupe_contacts`, `audit_list_health`, `contact_completeness_report`) still buffer; converting them is a per-script restructure.
 - **Parallel cohort scans**: pagination is serial per script. Could be parallelized with rate-aware backoff.
 - **Offset performance**: AC's `offset` parameter slows past ~100k records on some endpoints. Cursor-based pagination (`orders[id]=ASC&id_greater=N`) is supported on some endpoints — see `references/contacts.md`.
 

@@ -15,6 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 from collections import Counter
+from collections.abc import Iterable
 from pathlib import Path
 
 from _ac_client import ACClient
@@ -27,13 +28,15 @@ FREE_DOMAINS = {
 }
 
 
-def analyze(contacts: list[dict]) -> dict:
+def analyze(contacts: Iterable[dict]) -> dict:
     free = 0
     corporate = 0
     invalid = 0
+    total = 0
     domains = Counter()
 
     for c in contacts:
+        total += 1
         email = (c.get("email") or "").strip().lower()
         if "@" not in email:
             invalid += 1
@@ -47,7 +50,7 @@ def analyze(contacts: list[dict]) -> dict:
 
     valid = free + corporate
     return {
-        "total": len(contacts),
+        "total": total,
         "valid": valid,
         "invalid": invalid,
         "free": free,
@@ -100,7 +103,7 @@ def main():
     args = parser.parse_args()
 
     client = ACClient()
-    contacts = client.paginate("contacts", "contacts", max_items=args.max_contacts)
+    contacts = client.stream("contacts", "contacts", max_items=args.max_contacts)
     r = analyze(contacts)
     out = json.dumps(r, indent=2) if args.format == "json" else render_markdown(r)
     if args.output:

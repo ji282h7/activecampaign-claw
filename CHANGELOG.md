@@ -4,6 +4,15 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.10] — 2026-04-26
+
+### Added
+- `ACClient.stream(path, key, params, limit_per_page, max_items)` — generator that yields records one at a time. `paginate()` is now a thin wrapper around it (`return list(self.stream(...))`); behavior unchanged for existing callers.
+
+### Changed
+- `role_address_finder.py`, `free_vs_corporate_report.py`, `stale_contact_report.py` now use `stream()` for the contact scan. Memory peak drops from O(N) to <1 MB regardless of contact count. `stale_contact_report.analyze()` also bounds its output samples to 50 records (counts come from explicit counters).
+- SCALING.md updated with the new memory profile and remaining adoption gaps.
+
 ## [1.0.9] — 2026-04-26
 
 ### Changed

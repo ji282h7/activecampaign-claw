@@ -185,24 +185,39 @@ class ACClient:
     def delete(self, path: str) -> dict:
         return self._request("DELETE", path)
 
-    def paginate(self, path: str, key: str, params: dict | None = None,
-                 limit_per_page: int = 100, max_items: int = 5000) -> list:
+    def stream(self, path: str, key: str, params: dict | None = None,
+               limit_per_page: int = 100, max_items: int | None = None):
+        """Yield records from a paginated endpoint one at a time.
+
+        Memory-bounded alternative to paginate(). Use when callers can
+        aggregate as they read (filters, tallies, single-pass scans).
+
+        max_items=None means "no cap — keep going until the API returns
+        an empty page or a short page." Pass an int to cap.
+        """
         params = dict(params or {})
         params["limit"] = limit_per_page
-        out: list = []
         offset = 0
-        while len(out) < max_items:
+        yielded = 0
+        while max_items is None or yielded < max_items:
             params["offset"] = offset
             resp = self.get(path, params)
             chunk = resp.get(key, [])
             if not chunk:
                 break
-            out.extend(chunk)
+            for record in chunk:
+                yield record
+                yielded += 1
+                if max_items is not None and yielded >= max_items:
+                    return
             if len(chunk) < limit_per_page:
                 break
             offset += limit_per_page
             time.sleep(0.25)
-        return out[:max_items]
+
+    def paginate(self, path: str, key: str, params: dict | None = None,
+                 limit_per_page: int = 100, max_items: int = 5000) -> list:
+        return list(self.stream(path, key, params, limit_per_page, max_items))
 
     def fetch_engagement_events(self, max_items: int = 30000, quiet: bool = False) -> list:
         """Return a normalized list of engagement events.

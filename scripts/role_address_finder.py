@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections.abc import Iterable
 from pathlib import Path
 
 from _ac_client import ACClient
@@ -27,7 +28,7 @@ ROLE_LOCAL_PARTS = {
 }
 
 
-def find_role_addresses(contacts: list[dict]) -> list[dict]:
+def find_role_addresses(contacts: Iterable[dict]) -> list[dict]:
     out = []
     for c in contacts:
         email = (c.get("email") or "").strip().lower()
@@ -75,13 +76,20 @@ def main():
     args = parser.parse_args()
 
     client = ACClient()
-    contacts = client.paginate("contacts", "contacts", max_items=args.max_contacts)
-    matches = find_role_addresses(contacts)
+    counter = {"scanned": 0}
+
+    def _counted():
+        for c in client.stream("contacts", "contacts", max_items=args.max_contacts):
+            counter["scanned"] += 1
+            yield c
+
+    matches = find_role_addresses(_counted())
+    scanned = counter["scanned"]
 
     if args.format == "json":
-        out = json.dumps({"scanned": len(contacts), "matches": matches}, indent=2)
+        out = json.dumps({"scanned": scanned, "matches": matches}, indent=2)
     else:
-        out = render_markdown(matches, len(contacts))
+        out = render_markdown(matches, scanned)
 
     if args.output:
         Path(args.output).write_text(out)

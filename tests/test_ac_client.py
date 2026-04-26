@@ -35,6 +35,49 @@ class TestACClient:
         items = ac_client.paginate("tags", "tags", max_items=2)
         assert len(items) == 2
 
+    def test_stream_yields_records(self, ac_client):
+        out = list(ac_client.stream("tags", "tags"))
+        assert len(out) == 4
+        assert all(isinstance(r, dict) for r in out)
+        assert {t["tag"] for t in out} == {t["tag"] for t in ac_client.get("tags")["tags"]}
+
+    def test_stream_respects_max_items(self, ac_client):
+        out = list(ac_client.stream("tags", "tags", max_items=2))
+        assert len(out) == 2
+
+    def test_stream_is_lazy(self, ac_client):
+        # Generator hasn't run yet — calling stream() shouldn't fetch
+        gen = ac_client.stream("tags", "tags")
+        # It's a generator object, not a list
+        assert hasattr(gen, "__next__")
+        # First next() pulls the first record
+        first = next(gen)
+        assert "tag" in first
+
+    def test_paginate_delegates_to_stream(self, ac_client):
+        # Same data via both paths
+        from_paginate = ac_client.paginate("tags", "tags")
+        from_stream = list(ac_client.stream("tags", "tags", max_items=5000))
+        assert from_paginate == from_stream
+
+    def test_stream_stops_on_empty_chunk(self, ac_client_factory):
+        calls = {"n": 0}
+
+        def empty_response(params):
+            calls["n"] += 1
+            return {"things": []}
+
+        client = ac_client_factory({"things": empty_response})
+        out = list(client.stream("things", "things", max_items=1000))
+        assert out == []
+        assert calls["n"] == 1  # one call, then stop on empty page
+
+    def test_stream_handles_no_max_items(self, ac_client_factory):
+        # No cap, but mock returns a short page so we stop naturally
+        client = ac_client_factory({"things": {"things": [{"id": str(i)} for i in range(7)]}})
+        out = list(client.stream("things", "things"))
+        assert len(out) == 7
+
 
 class TestStateHelpers:
     def test_load_state_returns_none_when_missing(self, tmp_state_dir):
