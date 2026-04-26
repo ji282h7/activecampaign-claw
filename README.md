@@ -3,9 +3,9 @@
 [![tests](https://github.com/ji282h7/activecampaign-claw/actions/workflows/test.yml/badge.svg)](https://github.com/ji282h7/activecampaign-claw/actions/workflows/test.yml)
 [![python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org)
 [![license](https://img.shields.io/badge/license-MIT--0-green)](LICENSE)
-[![release](https://img.shields.io/badge/release-1.0.10-orange)](CHANGELOG.md)
+[![release](https://img.shields.io/badge/release-1.0.11-orange)](CHANGELOG.md)
 [![scripts](https://img.shields.io/badge/scripts-51-success)](#what-it-can-do)
-[![tests](https://img.shields.io/badge/tests-452%20passing-brightgreen)](tests/)
+[![tests](https://img.shields.io/badge/tests-455%20passing-brightgreen)](tests/)
 [![coverage](https://img.shields.io/badge/coverage-59%25-yellow)](tests/)
 [![ActiveCampaign](https://img.shields.io/badge/ActiveCampaign-v3%20API-blue)](https://developers.activecampaign.com/reference)
 

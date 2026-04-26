@@ -16,7 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
-from collections import defaultdict
+from collections.abc import Iterable
 from pathlib import Path
 
 from _ac_client import ACClient
@@ -43,27 +43,59 @@ def _name_company_key(c: dict) -> str:
     return ""
 
 
-def find_duplicates(contacts: list[dict]) -> dict:
-    by_email = defaultdict(list)
-    by_phone = defaultdict(list)
-    by_name = defaultdict(list)
+def _slim(c: dict) -> dict:
+    """Keep only the fields used downstream — keeps memory bounded for huge accounts."""
+    return {"id": c["id"], "email": c.get("email")}
+
+
+def find_duplicates(contacts: Iterable[dict]) -> dict:
+    """Single-pass duplicate detection.
+
+    Stores slim records keyed by email/phone/name. Singletons live in the
+    `seen_*` maps; once a key is seen a second time, the entry is promoted
+    into `*_dupes` and removed from `seen_*`. Final memory ≈ O(N_unique
+    keys × slim record size) instead of O(N × full record size).
+    """
+    seen_email: dict[str, dict] = {}
+    seen_phone: dict[str, dict] = {}
+    seen_name: dict[str, dict] = {}
+    email_dupes: dict[str, list] = {}
+    phone_dupes: dict[str, list] = {}
+    name_dupes: dict[str, list] = {}
+    scanned = 0
 
     for c in contacts:
+        scanned += 1
+        slim = _slim(c)
         email = _norm_email(c.get("email", ""))
         phone = _norm_phone(c.get("phone", ""))
         name_key = _name_company_key(c)
+
         if email:
-            by_email[email].append(c)
+            if email in email_dupes:
+                email_dupes[email].append(slim)
+            elif email in seen_email:
+                email_dupes[email] = [seen_email.pop(email), slim]
+            else:
+                seen_email[email] = slim
+
         if phone:
-            by_phone[phone].append(c)
+            if phone in phone_dupes:
+                phone_dupes[phone].append(slim)
+            elif phone in seen_phone:
+                phone_dupes[phone] = [seen_phone.pop(phone), slim]
+            else:
+                seen_phone[phone] = slim
+
         if name_key:
-            by_name[name_key].append(c)
+            if name_key in name_dupes:
+                name_dupes[name_key].append(slim)
+            elif name_key in seen_name:
+                name_dupes[name_key] = [seen_name.pop(name_key), slim]
+            else:
+                seen_name[name_key] = slim
 
-    email_dupes = {e: cs for e, cs in by_email.items() if len(cs) > 1}
-    phone_dupes = {p: cs for p, cs in by_phone.items() if len(cs) > 1}
-    name_dupes = {n: cs for n, cs in by_name.items() if len(cs) > 1}
-
-    # Filter name_dupes that are not also caught by email (high-confidence is email/phone)
+    # Filter name_dupes that aren't already caught by email (high-confidence is email/phone)
     name_only = {}
     for n, cs in name_dupes.items():
         emails = {_norm_email(c.get("email", "")) for c in cs}
@@ -71,6 +103,7 @@ def find_duplicates(contacts: list[dict]) -> dict:
             name_only[n] = cs
 
     return {
+        "scanned": scanned,
         "email_case_duplicates": email_dupes,
         "phone_duplicates": phone_dupes,
         "name_duplicates_distinct_email": name_only,
@@ -118,13 +151,12 @@ def main():
     args = parser.parse_args()
 
     client = ACClient()
-    contacts = client.paginate("contacts", "contacts", max_items=args.max_contacts)
+    contacts = client.stream("contacts", "contacts", max_items=args.max_contacts)
     d = find_duplicates(contacts)
 
     if args.format == "json":
-        # JSON-safe: only ids/emails/phones, no full contact records
         out_obj = {
-            "scanned": len(contacts),
+            "scanned": d["scanned"],
             "email_case_duplicates": [
                 {"key": e, "ids": [c["id"] for c in cs]}
                 for e, cs in d["email_case_duplicates"].items()
@@ -140,7 +172,7 @@ def main():
         }
         out = json.dumps(out_obj, indent=2)
     else:
-        out = render_markdown(d, len(contacts))
+        out = render_markdown(d, d["scanned"])
 
     if args.output:
         Path(args.output).write_text(out)

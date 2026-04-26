@@ -4,6 +4,15 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.11] — 2026-04-26
+
+### Changed
+- `dedupe_contacts.py` now uses `stream()` with slim records (id + email only) keyed by email/phone/name. Singletons sit in lookup maps until promoted to the duplicate output; full records never accumulate. Peak memory drops from ~1.5–2 GB on 1M-contact accounts to ~150 MB. `find_duplicates()` accepts any iterable; return dict now includes a `scanned` count.
+- SCALING.md: documented why `audit_list_health` (already sample-bounded) and `contact_completeness_report` (streaming would force a 600× slowdown via per-contact field-value lookups) are intentionally still buffered.
+
+### Added
+- 3 new tests for `dedupe_contacts`: accepts a generator input, drops singletons from the output, and stores slim records only.
+
 ## [1.0.10] — 2026-04-26
 
 ### Added

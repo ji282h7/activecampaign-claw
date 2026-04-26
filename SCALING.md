@@ -50,13 +50,17 @@ These are best-case. AC may throttle harder on lower plans, and `offset` perform
 | 100k | 150–200 MB | <1 MB |
 | 1M | 1.5–2 GB | <1 MB |
 
-Scripts that already use `stream()` (single-pass adoptions in 1.0.10):
+Scripts that already use `stream()`:
 
 - `role_address_finder.py` — bounded by match count (typically <1k records).
 - `free_vs_corporate_report.py` — bounded by unique-domain count (~thousands max).
 - `stale_contact_report.py` — bounded by an activity-id-to-timestamp dict plus 50-record output samples; total under 50 MB even on 1M-contact accounts.
+- `dedupe_contacts.py` (1.0.11) — slim records (id + email only) keyed by email/phone/name. Singletons sit in lookup maps until promoted to the duplicate output; full records never accumulate. Peak ~150 MB on 1M-contact accounts vs. 1.5–2 GB before.
 
-Multi-pass scripts (`dedupe_contacts`, `audit_list_health`, `contact_completeness_report`) still use `paginate()` because they build intermediate maps and re-traverse them. If you need them on a huge account, scope to a list / tag / segment first or file an issue.
+### Scripts intentionally still buffered
+
+- **`audit_list_health.py`** already operates on a `sample_size`-bounded subset by design — it computes distribution math, not per-contact records. Streaming would shave ~150 MB at most; not worth the refactor.
+- **`contact_completeness_report.py`** joins contacts with their field values. Both sets must be in memory together to do the join. Streaming the contact side would force a per-contact `/contacts/{id}/fieldValues` API call — at 5 req/sec, a 100k-contact join would take ~5.5 hours instead of ~30 sec. The memory savings aren't worth a 600× slowdown. If you have a bigger account and need this report, scope it to a list or tag first.
 
 ## Recommended workflows for large accounts
 
@@ -70,8 +74,7 @@ Multi-pass scripts (`dedupe_contacts`, `audit_list_health`, `contact_completenes
 
 ## What's not optimized yet
 
-- **Streaming adoption is partial.** `ACClient.stream()` exists and is in use by three single-pass scripts. Multi-pass scripts (`dedupe_contacts`, `audit_list_health`, `contact_completeness_report`) still buffer; converting them is a per-script restructure.
-- **Parallel cohort scans**: pagination is serial per script. Could be parallelized with rate-aware backoff.
+- **Parallel cohort scans**: pagination is serial per script. Could be parallelized with rate-aware backoff. Useful for workflows like "list health on each of 13 lists" — sequential today, parallel would be ~5× faster.
 - **Offset performance**: AC's `offset` parameter slows past ~100k records on some endpoints. Cursor-based pagination (`orders[id]=ASC&id_greater=N`) is supported on some endpoints — see `references/contacts.md`.
 
 If your account is in the 500k+ range and any of these matter for your workflow, please file an issue at https://github.com/ji282h7/activecampaign-claw/issues.
