@@ -1,0 +1,46 @@
+# OS / editor
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Test + coverage artifacts
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local credentials / env files (defensive — skill doesn't use them)
+.env
+.env.*
+*.local
+
+# Per-user runtime state created by the skill scripts
+# (these would normally live at ~/.activecampaign-skill/, but defensive in case
+# any test or run drops them inside the repo)
+state.json
+history.jsonl
+insights.md
+snapshots/
+
+# Internal build/planning notes that shouldn't ship
+BUILD_PLAN.md
+
+# Stray placeholder files from rename operations
+.placeholder
