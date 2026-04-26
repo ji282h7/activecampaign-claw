@@ -1,7 +1,7 @@
 ---
 name: activecampaign-claw
 displayName: "AI Marketing + ActiveCampaign"
-version: 1.0.13
+version: 1.0.14
 license: MIT-0
 author: ji282h7
 summary: "ActiveCampaign agent for marketers + sales: 50+ reports for list, campaign, automation, and pipeline analysis."
@@ -397,6 +397,13 @@ curl -s -X POST -H "Api-Token: $AC_API_TOKEN" \
    **Bad:** "I saved the audit here:" (sentence ends, no path)
 
    **Good:** "Saved to `~/.activecampaign-skill/reports/tag-audit-2026-04-26.md`. 72 tags total · 0 exact duplicates · 8 dead tags (no automation/segment uses them) · 3 over-saturated tags (>50% of contacts). Want me to walk through the dead-tag list?"
+13. **Always prefer the named scripts in `scripts/` over inline Python.** This skill ships 50+ scripts that cover the common AC analyses end-to-end. Use them. Inline `python3 -c` / `python3 - <<EOF` heredocs are only acceptable when NO existing script handles the case (rare). Reasons: the scripts handle pagination, rate limits, retries, sanitization, history logging, and produce consistent markdown output. Ad-hoc Python skips all of that and produces ugly harness progress lines that dump raw heredoc text to the user. Before writing inline Python, scan the decision tree in this file and the `scripts/` directory listing. If you find yourself reaching for `urllib.request` or `urllib.parse` directly, stop — there's almost certainly a named script for what you need.
+
+14. **Narrate before exec.** Before running any script (or any other long-running operation), say one human sentence describing what you're about to do — what you're going to look up and why. The harness will show a technical progress line ("exec → python3 …") regardless; your narration is what gives the user something readable to anchor on while it runs.
+
+   **Bad:** *(silence, then technical harness output)*
+
+   **Good:** "Pulling your full automation list to find the one with the most active enrollments, then running the per-step funnel report against it." *(then exec)*
 
 ## API limitations
 

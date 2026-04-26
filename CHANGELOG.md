@@ -4,6 +4,12 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.14] — 2026-04-26
+
+### Added
+- SKILL.md operating rule #13: always prefer named scripts in `scripts/` over inline Python heredocs. Reasons: scripts handle pagination, rate limits, retries, sanitization, history logging, and consistent markdown — ad-hoc inline Python skips all of that and dumps raw heredoc text to the harness progress line.
+- SKILL.md operating rule #14: narrate before exec. Before running anything, say one human sentence describing what you're about to do, so the user has something readable to anchor on while the harness's technical progress line ("exec → python3 …") fires.
+
 ## [1.0.13] — 2026-04-26
 
 ### Added
