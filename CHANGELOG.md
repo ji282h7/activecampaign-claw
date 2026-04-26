@@ -4,6 +4,15 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.16] — 2026-04-26
+
+### Changed
+- Strengthened SKILL.md rule #12 with two new hard rules:
+  - **Pass through `Wrote /path` lines verbatim.** Every script that writes a file prints these to stdout; the agent must scan for `Wrote `, `Saved to `, `Output:` substrings and reproduce every match in the response.
+  - **Forbidden trailing labels enumerated explicitly.** `Files:`, `Output:`, `Current snapshot:`, `Latest pointer:`, `Saved to:`, `Results:`, etc. — any of these followed by no content marks the response as broken.
+- Added a real "snapshot trail-off" example pulled from observed agent output, with both bad and good versions including the actual `~/.activecampaign-skill/snapshots/...json`, `manifest.jsonl`, and LaunchAgent paths.
+- Codified required response structure for file-writing scripts: 1-line summary → enumerated paths → 2-3 line content summary → next-step offer.
+
 ## [1.0.15] — 2026-04-26
 
 ### Changed
