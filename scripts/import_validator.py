@@ -25,7 +25,7 @@ from pathlib import Path
 EMAIL_RE = re.compile(r"^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$")
 ROLE_LOCAL_PARTS = {
     "info", "support", "sales", "admin", "noreply", "no-reply", "contact",
-    "hello", "team", "office", "help", "service", "billing", "marketing",
+    "hello", "team", "office", "help", "service", "marketing",
     "abuse", "postmaster", "webmaster", "hr", "jobs", "press", "media",
 }
 FREE_DOMAINS = {

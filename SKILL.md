@@ -1,7 +1,7 @@
 ---
 name: activecampaign-claw
 displayName: "AI Marketing + ActiveCampaign"
-version: 1.0.2
+version: 1.0.3
 license: MIT-0
 author: ji282h7
 summary: "ActiveCampaign agent for marketers + sales: 50+ reports for list, campaign, automation, and pipeline analysis."
@@ -138,7 +138,7 @@ Direct integration with ActiveCampaign's v3 API, built to operate the way an exp
 - The user is asking about a different CRM or email platform (HubSpot, Mailchimp, Salesforce, etc.)
 - The question is about generic email marketing theory with no connection to ActiveCampaign
 - The user needs to send a campaign or create an automation (the AC v3 API cannot do these — explain the limitation)
-- The user is asking about ActiveCampaign account billing, user management, or admin settings (not covered by this skill)
+- The user is asking about ActiveCampaign account plan, user management, or admin settings (not covered by this skill)
 
 ## What makes this skill different
 

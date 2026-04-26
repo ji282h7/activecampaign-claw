@@ -26,7 +26,7 @@ If state.json isn't available, defaults:
 ### Personalization beyond first name
 
 - Most-recent-product-viewed (requires ecommerce data in AC)
-- Last-purchase context ("Loved the Widget Pro? See the Mark II")
+- Last-conversion context ("Loved the Widget Pro? See the Mark II")
 - Tier/plan ("As a Pro customer, you get early access") — use custom field values
 - Geography (timezone, weather, local events) — but only if you have actual data
 

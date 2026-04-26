@@ -20,7 +20,7 @@ from _ac_client import ACClient
 
 ROLE_LOCAL_PARTS = {
     "info", "support", "sales", "admin", "noreply", "no-reply", "contact",
-    "hello", "team", "office", "help", "service", "billing", "marketing",
+    "hello", "team", "office", "help", "service", "marketing",
     "abuse", "postmaster", "webmaster", "hr", "jobs", "press", "media",
     "accounts", "accounting", "finance", "legal", "compliance", "inquiries",
     "feedback", "general", "enquiries", "sysadmin", "root",

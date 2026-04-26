@@ -32,8 +32,8 @@ Recency, Frequency, Monetary — the classic segmentation framework. Maps direct
 
 | Dimension | AC data source | How to compute |
 |---|---|---|
-| **Recency** | Last email open date, last site visit, last purchase | Query contacts, sort by last activity. API: filter by `updated_after`. |
-| **Frequency** | Number of purchases, email opens over time | Ecommerce API for purchases. Campaign activity for engagement counts. |
+| **Recency** | Last email open date, last site visit, last conversion | Query contacts, sort by last activity. API: filter by `updated_after`. |
+| **Frequency** | Number of conversions, email opens over time | Ecommerce API for conversions. Campaign activity for engagement counts. |
 | **Monetary** | Deal values, order totals | Deals API (`value` field, in cents). Ecommerce API for order totals. |
 
 ### RFM scoring in AC
@@ -56,7 +56,7 @@ Where is the contact in their journey?
 
 | Stage | Definition | AC implementation |
 |---|---|---|
-| **Subscriber** | Signed up, hasn't purchased or started trial | Tag: `subscriber`, no `customer` or `trial` tag |
+| **Subscriber** | Signed up, hasn't converted or started trial | Tag: `subscriber`, no `customer` or `trial` tag |
 | **Lead** | Showing intent (visited pricing, downloaded content) | Tag: `lead` or score above threshold |
 | **Trial** | Active trial user | Tag: `trial-active` + custom field: trial start date |
 | **Customer** | Paying customer | Tag: `customer` + deal in Won status |
@@ -160,7 +160,7 @@ Tag: customer AND custom field "Plan" = "Pro" AND deal value > [median]
 - **Static-only**: Tags without automation = stale labels. Use automations to keep tags current.
 - **Ignoring engagement**: Sending to your "full list" including dormants will kill deliverability. Always filter by engagement.
 - **Demographic-only**: "All VPs in California" ignores intent. Combine demographic + behavioral.
-- **List buying**: Purchased lists destroy sender reputation. Period. No segment design fixes this.
+- **Third-party lists**: Acquired lists destroy sender reputation. Period. No segment design fixes this.
 
 ## Related files
 

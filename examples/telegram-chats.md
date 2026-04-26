@@ -82,7 +82,7 @@ The agent's responses use real data from the underlying scripts — open rates, 
 >    Action: suppress all 47 (1-click via API)
 >
 > 2. **63 case-insensitive email duplicates**
->    e.g. `Alice@Acme.com` AND `alice@acme.com` — both billing as 1 contact
+>    e.g. `Alice@Acme.com` AND `alice@acme.com` — both counting as 1 contact toward your plan
 >    Action: merge to lowercase canonical
 >
 > 3. **8 lists ≥95% subset of "Master Contact List"**
