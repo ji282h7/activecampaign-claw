@@ -3,7 +3,7 @@
 [![tests](https://github.com/ji282h7/activecampaign-claw/actions/workflows/test.yml/badge.svg)](https://github.com/ji282h7/activecampaign-claw/actions/workflows/test.yml)
 [![python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org)
 [![license](https://img.shields.io/badge/license-MIT--0-green)](LICENSE)
-[![release](https://img.shields.io/badge/release-1.0.4-orange)](CHANGELOG.md)
+[![release](https://img.shields.io/badge/release-1.0.5-orange)](CHANGELOG.md)
 [![scripts](https://img.shields.io/badge/scripts-50-success)](#what-it-can-do)
 [![tests](https://img.shields.io/badge/tests-431%20passing-brightgreen)](tests/)
 [![coverage](https://img.shields.io/badge/coverage-59%25-yellow)](tests/)
@@ -88,6 +88,14 @@ ActiveCampaign's v3 API is designed around records and integrations, not send/bu
 - **Per-event open data depends on your plan.** When `/messageActivities` returns 404, engagement reports automatically fall back to `/linkData` for click-by-domain breakdowns.
 - **Deal time-in-stage** is computed from current state and recent activity windows; pipeline reports surface the most actionable view.
 - **Deals-dependent reports** (`pipeline_audit`, `mql_to_sql_handoff`, `win_loss_report`) work on AC plans that include the Deals feature; they exit cleanly with a clear message otherwise.
+
+## Performance & scale
+
+Most reports scale freely with account size — they're bounded by taxonomy (lists, tags, fields, automations) or campaign count, not contact count. Calibration finishes in ~1 minute on accounts of any size because it reads counts from `meta.total` rather than scanning rows.
+
+A handful of contact-scanning reports cap at 5k–20k by default to keep runtime reasonable: `dedupe_contacts`, `role_address_finder`, `free_vs_corporate_report`, `contact_completeness_report`, `stale_contact_report`. Raise the cap with `--max-contacts`, or scope to a single list / tag / segment first — most marketing questions are cohort-scoped anyway.
+
+For accounts with 100k+ contacts, full-account scans are slow (roughly 1 hour per 150k contacts at AC's default 5 req/sec rate limit). See [SCALING.md](SCALING.md) for runtime math, memory profile, and recommended workflows.
 
 ## Quick start (5 minutes)
 
