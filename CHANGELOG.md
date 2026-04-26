@@ -4,6 +4,11 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.15] — 2026-04-26
+
+### Changed
+- Generalized SKILL.md rule #12 to catch any trailing-label/colon pattern, not just `"saved here:"`. The previous wording missed the `"Files:"` variant observed in suppression_export. Rule now: any line introducing output (`Files:`, `Output:`, `Results:`, `Saved to:`, etc.) must be followed by the actual content in the same response. Includes "list every file path" requirement for multi-file exports and an explicit "no files written — output printed inline above" fallback for stdout-only scripts.
+
 ## [1.0.14] — 2026-04-26
 
 ### Added

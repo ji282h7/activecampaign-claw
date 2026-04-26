@@ -3,7 +3,7 @@
 [![tests](https://github.com/ji282h7/activecampaign-claw/actions/workflows/test.yml/badge.svg)](https://github.com/ji282h7/activecampaign-claw/actions/workflows/test.yml)
 [![python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org)
 [![license](https://img.shields.io/badge/license-MIT--0-green)](LICENSE)
-[![release](https://img.shields.io/badge/release-1.0.14-orange)](CHANGELOG.md)
+[![release](https://img.shields.io/badge/release-1.0.15-orange)](CHANGELOG.md)
 [![scripts](https://img.shields.io/badge/scripts-51-success)](#what-it-can-do)
 [![tests](https://img.shields.io/badge/tests-490%20passing-brightgreen)](tests/)
 [![coverage](https://img.shields.io/badge/coverage-66%25-yellow)](tests/)
