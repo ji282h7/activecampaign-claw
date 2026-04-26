@@ -27,3 +27,18 @@ def test_no_stalled():
     data = {"automations": [], "contact_automations": []}
     r = stalled_automations.analyze(data, min_days=14)
     assert r["stalled_count"] == 0
+
+
+def test_render_markdown_includes_sections():
+    now = datetime.now(timezone.utc)
+    stale = (now - timedelta(days=30)).isoformat()
+    data = {
+        "automations": [{"id": "1", "name": "Welcome"}],
+        "contact_automations": [
+            {"contact": "100", "automation": "1", "status": "1", "lastblock": "5", "lastdate": stale},
+        ],
+    }
+    r = stalled_automations.analyze(data, min_days=14)
+    md = stalled_automations.render_markdown(r)
+    assert "# Stalled Automation Enrollments" in md
+    assert "Stalled contacts" in md

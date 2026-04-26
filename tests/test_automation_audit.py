@@ -35,3 +35,27 @@ def test_completion_rate_and_orphan_detection():
     assert "2" in orphan_ids
     assert "1" not in orphan_ids
     assert "3" not in orphan_ids  # status=0 not flagged as orphan
+
+
+def test_render_markdown_includes_sections():
+    r = {
+        "automations": [
+            {
+                "id": "1",
+                "name": "Welcome",
+                "status": "1",
+                "enrolled_total": 100,
+                "active": 10,
+                "completed": 80,
+                "removed": 10,
+                "completion_rate": 0.8,
+                "recent_enrollments": 5,
+            },
+        ],
+        "orphaned_active": [{"id": "2", "name": "Stale Flow"}],
+        "window_days": 30,
+    }
+    md = automation_audit.render_markdown(r)
+    assert "# Automation Audit" in md
+    assert "## Orphaned" in md
+    assert "Stale Flow" in md

@@ -26,3 +26,15 @@ def test_excludes_no_sdate():
     ]
     r = monthly_performance.analyze(campaigns)
     assert r["months"] == []
+
+
+def test_render_markdown_includes_sections():
+    campaigns = [
+        {"sdate": "2026-01-15T10:00:00Z", "send_amt": "100", "uniqueopens": "20",
+         "uniquelinkclicks": "5", "unsubscribes": "1", "bounces": "1",
+         "opens": "30", "linkclicks": "8"},
+    ]
+    r = monthly_performance.analyze(campaigns)
+    md = monthly_performance.render_markdown(r)
+    assert "# Monthly Campaign Performance" in md
+    assert "2026-01" in md

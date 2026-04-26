@@ -41,3 +41,15 @@ def test_min_overlap_threshold():
     }
     r = list_overlap.analyze(data, min_overlap=10)
     assert r["overlap_pairs"] == []
+
+
+def test_render_markdown_includes_sections():
+    data = {
+        "lists": [{"id": "1", "name": "A"}, {"id": "2", "name": "B"}],
+        "contact_lists": [{"contact": str(i), "list": "1", "status": "1"} for i in range(20)] +
+                         [{"contact": str(i), "list": "2", "status": "1"} for i in range(5)],
+    }
+    r = list_overlap.analyze(data, min_overlap=1)
+    md = list_overlap.render_markdown(r)
+    assert "# List Overlap" in md
+    assert "Subset pairs" in md

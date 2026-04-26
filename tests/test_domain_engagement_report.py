@@ -35,3 +35,18 @@ def test_top_limit_respected():
     }
     r = der.analyze(data, top=5)
     assert len(r["domains"]) == 5
+
+
+def test_render_markdown_includes_sections():
+    data = {
+        "contacts": [
+            {"id": "1", "email": "a@gmail.com"},
+            {"id": "2", "email": "b@gmail.com"},
+        ],
+        "activities": [{"event": "open", "contact": "1"}],
+        "bounces": [],
+    }
+    r = der.analyze(data, top=10)
+    md = der.render_markdown(r)
+    assert "# Domain Engagement Report" in md
+    assert "gmail.com" in md

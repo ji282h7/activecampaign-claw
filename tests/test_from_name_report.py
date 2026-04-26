@@ -25,3 +25,18 @@ def test_unknown_fallback():
     data = {"campaigns": [{"send_amt": "100", "uniqueopens": "30"}], "messages": []}
     r = from_name_report.analyze(data)
     assert r["by_from_name"][0]["key"] == "(unknown)"
+
+
+def test_render_markdown_includes_sections():
+    data = {
+        "campaigns": [
+            {"send_amt": "100", "uniqueopens": "30", "uniquelinkclicks": "5",
+             "fromname": "Alice", "fromemail": "a@x.com"},
+        ],
+        "messages": [],
+    }
+    r = from_name_report.analyze(data)
+    md = from_name_report.render_markdown(r)
+    assert "# From-Name & From-Email Performance" in md
+    assert "## By from-name" in md
+    assert "Alice" in md

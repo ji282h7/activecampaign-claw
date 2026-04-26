@@ -41,3 +41,30 @@ def test_zero_send_handled():
     r = campaign_postmortem.analyze(data, {})
     assert r["metrics"]["open_rate"] == 0
     assert r["metrics"]["click_rate"] == 0
+
+
+def test_render_markdown_includes_sections():
+    data = {
+        "campaign": {
+            "id": "42",
+            "name": "Spring Promo",
+            "subject": "Hello",
+            "send_amt": "1000",
+            "opens": "300",
+            "uniqueopens": "250",
+            "linkclicks": "60",
+            "uniquelinkclicks": "40",
+            "unsubscribes": "5",
+            "bounces": "10",
+            "sdate": "2026-04-01T12:00:00Z",
+        },
+        "links": [
+            {"link": "https://x.com/a", "name": "A", "linkclicks": "30", "uniquelinkclicks": "20"},
+        ],
+        "activities": [],
+    }
+    r = campaign_postmortem.analyze(data, {"open_rate_p50": 0.20, "click_rate_p50": 0.03, "unsub_rate": 0.005})
+    md = campaign_postmortem.render_markdown(r)
+    assert "# Campaign Postmortem: Spring Promo" in md
+    assert "## Metrics" in md
+    assert "## Top links" in md

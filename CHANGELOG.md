@@ -4,6 +4,15 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.12] — 2026-04-26
+
+### Added
+- 26 new `render_markdown()` tests across previously-untested scripts: `automation_audit`, `automation_funnel`, `automation_overlap`, `baseline_drift`, `broken_automation_detector`, `campaign_postmortem`, `campaign_velocity`, `contact_completeness_report`, `content_length_report`, `domain_engagement_report`, `engagement_decay`, `form_audit`, `from_name_report`, `link_performance`, `list_audit`, `list_growth_forecast`, `list_overlap`, `monthly_performance`, `mql_to_sql_handoff`, `new_subscriber_quality`, `send_frequency_report`, `stale_contact_report`, `stalled_automations`, `subject_line_report`, `unsubscribe_audit`, `win_loss_report`.
+- 9 new `main()` integration tests in `tests/test_main_integration.py` covering the most-used scripts: `import_validator`, `audit_list_health`, `find_hot_leads`, `dedupe_contacts`, `tag_merge`. Each patches `sys.argv`, mocks `ACClient` where needed, runs `main()`, and verifies output. Also covers error paths (missing CSV, unknown source tag).
+
+### Changed
+- Coverage: 59% → 66%. Test count: 455 → 490.
+
 ## [1.0.11] — 2026-04-26
 
 ### Changed

@@ -34,3 +34,18 @@ def test_no_broken_when_refs_valid():
     }
     r = bad.analyze(data)
     assert r["broken"] == []
+
+
+def test_render_markdown_includes_sections():
+    data = {
+        "automations": [{"id": "1", "name": "Welcome"}],
+        "blocks": [{"automation": "1", "type": "tagadd", "params": {"tag": "99"}}],
+        "valid": {
+            "tag": {"42"}, "field": set(), "list": set(), "message": set(), "automation": {"1"},
+        },
+    }
+    r = bad.analyze(data)
+    md = bad.render_markdown(r)
+    assert "# Broken Automation Detector" in md
+    assert "Welcome" in md
+    assert "Missing tag ids" in md

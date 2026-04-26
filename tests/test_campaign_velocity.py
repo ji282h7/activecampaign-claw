@@ -27,3 +27,18 @@ def test_no_lists_in_window():
     r = campaign_velocity.analyze(data, days=90)
     assert r["by_list"] == []
     assert r["total_campaigns"] == 0
+
+
+def test_render_markdown_includes_sections():
+    data = {
+        "campaigns": [
+            {"sdate": "2026-01-01T10:00:00+00:00", "send_amt": "100", "lists": [{"list": "1"}]},
+            {"sdate": "2026-01-08T10:00:00+00:00", "send_amt": "100", "lists": [{"list": "1"}]},
+        ],
+        "lists": [{"id": "1", "name": "Main"}],
+        "window_start": datetime(2025, 1, 1, tzinfo=timezone.utc),
+    }
+    r = campaign_velocity.analyze(data, days=365)
+    md = campaign_velocity.render_markdown(r)
+    assert "# Campaign Velocity" in md
+    assert "Main" in md

@@ -41,3 +41,24 @@ def test_outside_window_excluded():
     }
     r = mql_to_sql_handoff.analyze(data, threshold=50, days=7)
     assert r["contacts_crossed_threshold"] == 0
+
+
+def test_render_markdown_includes_sections():
+    now = datetime.now(timezone.utc)
+    recent = (now - timedelta(days=2)).isoformat()
+    data = {
+        "contacts": [],
+        "scores": [
+            {"contact": "1", "scoreValue": "75", "mdate": recent},
+            {"contact": "2", "scoreValue": "55", "mdate": recent},
+        ],
+        "deals": [
+            {"id": "100", "contact": "1", "value": "50000", "cdate": recent},
+            {"id": "200", "contact": "999", "value": "20000", "cdate": recent},
+        ],
+    }
+    r = mql_to_sql_handoff.analyze(data, threshold=50, days=7)
+    md = mql_to_sql_handoff.render_markdown(r)
+    assert "# MQL→SQL Handoff" in md
+    assert "Handoff misses" in md
+    assert "Deals without prior scoring" in md

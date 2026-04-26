@@ -34,3 +34,20 @@ def test_custom_field_counts():
     r = ccr.analyze(data)
     assert r["custom_fields"][0]["populated"] == 2
     assert abs(r["custom_fields"][0]["pct"] - 20.0) < 0.01
+
+
+def test_render_markdown_includes_sections():
+    data = {
+        "contacts": [
+            {"id": "1", "firstName": "A", "lastName": "B", "phone": "555"},
+            {"id": "2", "firstName": "C", "lastName": "", "phone": ""},
+        ],
+        "fields": [{"id": "1", "title": "Industry", "type": "dropdown"}],
+        "field_values": [{"contact": "1", "field": "1", "value": "Tech"}],
+    }
+    r = ccr.analyze(data)
+    md = ccr.render_markdown(r)
+    assert "# Contact Completeness Report" in md
+    assert "## Built-in fields" in md
+    assert "## Custom fields" in md
+    assert "Industry" in md

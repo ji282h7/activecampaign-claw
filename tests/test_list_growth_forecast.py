@@ -28,3 +28,13 @@ def test_zero_window_safe():
     assert r["total_contacts"] == 0
     assert r["new_in_window"] == 0
     assert r["projected_change"] == 0
+
+
+def test_render_markdown_includes_sections():
+    now = datetime.now(timezone.utc)
+    recent = (now - timedelta(days=10)).isoformat()
+    contacts = [{"cdate": recent} for _ in range(15)]
+    r = list_growth_forecast.analyze(contacts, window_days=30, project_days=90)
+    md = list_growth_forecast.render_markdown(r)
+    assert "# List Growth Forecast" in md
+    assert "Projected in 90 days" in md

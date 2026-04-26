@@ -25,3 +25,17 @@ def test_zero_open_zero_send_safe():
     data = {"campaign": {"send_amt": "0", "uniqueopens": "0"}, "links": []}
     r = link_performance.analyze(data)
     assert r["total_links"] == 0
+
+
+def test_render_markdown_includes_sections():
+    data = {
+        "campaign": {"id": "1", "name": "Promo", "send_amt": "1000", "uniqueopens": "200"},
+        "links": [
+            {"id": "1", "link": "https://x/a", "name": "A",
+             "linkclicks": "50", "uniquelinkclicks": "40", "tracked": "1"},
+        ],
+    }
+    r = link_performance.analyze(data)
+    md = link_performance.render_markdown(r)
+    assert "# Link Performance: Promo" in md
+    assert "https://x/a" in md

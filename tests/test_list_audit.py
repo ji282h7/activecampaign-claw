@@ -33,3 +33,15 @@ def test_stale_when_no_campaign():
     r = list_audit.analyze(data)
     assert r["stale_count"] == 1
     assert r["lists"][0]["stale"] is True
+
+
+def test_render_markdown_includes_sections():
+    data = {
+        "lists": [{"id": "1", "name": "Main"}],
+        "contact_lists": [{"contact": "10", "list": "1", "status": "1"}],
+        "campaigns": [],
+    }
+    r = list_audit.analyze(data)
+    md = list_audit.render_markdown(r)
+    assert "# List Audit" in md
+    assert "Main" in md

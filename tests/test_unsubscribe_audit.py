@@ -30,3 +30,17 @@ def test_form_optin_detection():
     missing_ids = {f["id"] for f in r["form_missing"]}
     assert "2" in missing_ids
     assert "1" not in missing_ids
+
+
+def test_render_markdown_includes_sections():
+    data = {
+        "messages": [
+            {"id": "3", "name": "Missing", "subject": "S", "html": "<p>no link here</p>", "text": ""},
+        ],
+        "forms": [{"id": "2", "name": "Bare form", "fields": ["email"]}],
+    }
+    r = unsubscribe_audit.analyze(data)
+    md = unsubscribe_audit.render_markdown(r)
+    assert "# Unsubscribe & Opt-In Audit" in md
+    assert "Messages missing unsubscribe link" in md
+    assert "Forms missing opt-in language" in md

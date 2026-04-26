@@ -39,3 +39,15 @@ def test_pattern_lift():
 def test_empty_campaigns():
     r = sl.analyze([])
     assert r["campaigns_analyzed"] == 0
+
+
+def test_render_markdown_includes_sections():
+    campaigns = [
+        {"send_amt": "100", "uniqueopens": "30", "subject": "%FIRSTNAME%, hi"},
+        {"send_amt": "100", "uniqueopens": "20", "subject": "Newsletter"},
+    ]
+    r = sl.analyze(campaigns)
+    md = sl.render_markdown(r)
+    assert "# Subject Line Report" in md
+    assert "## Pattern lift" in md
+    assert "## Length buckets" in md

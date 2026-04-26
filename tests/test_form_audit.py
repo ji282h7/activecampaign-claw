@@ -36,3 +36,15 @@ def test_no_contacts_for_form():
     r = form_audit.analyze(data)
     assert r["forms"][0]["contacts"] == 0
     assert r["forms"][0]["engagement_rate"] == 0
+
+
+def test_render_markdown_includes_sections():
+    data = {
+        "forms": [{"id": "1", "name": "Newsletter Signup"}],
+        "contacts": [{"id": "10", "sourceid": "1"}],
+        "activities": [{"event": "open", "contact": "10"}],
+    }
+    r = form_audit.analyze(data)
+    md = form_audit.render_markdown(r)
+    assert "# Form Audit" in md
+    assert "Newsletter Signup" in md

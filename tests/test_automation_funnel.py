@@ -38,3 +38,20 @@ def test_zero_enrollments():
     r = automation_funnel.analyze(data)
     assert r["enrolled_total"] == 0
     assert r["completion_rate"] == 0
+
+
+def test_render_markdown_includes_sections():
+    data = {
+        "automation": {"id": "5", "name": "Welcome", "status": "1"},
+        "blocks": [
+            {"id": "100", "ordernum": "1", "type": "send", "title": "Email 1"},
+        ],
+        "contact_automations": [
+            {"automation": "5", "status": "2", "lastblock": "100"},
+        ],
+    }
+    r = automation_funnel.analyze(data)
+    md = automation_funnel.render_markdown(r)
+    assert "# Automation Funnel: Welcome" in md
+    assert "Per-block" in md
+    assert "Email 1" in md

@@ -42,3 +42,25 @@ def test_no_list_fallback():
     }
     r = win_loss_report.analyze(data)
     assert r["by_source_list"][0]["list"] == "(no list)"
+
+
+def test_render_markdown_includes_sections():
+    now = datetime.now(timezone.utc)
+    recent = (now - timedelta(days=10)).isoformat()
+    data = {
+        "deals": [
+            {"id": "1", "contact": "10", "status": "2", "value": "100000",
+             "cdate": (now - timedelta(days=20)).isoformat(), "edate": recent, "mdate": recent},
+            {"id": "2", "contact": "11", "status": "3", "value": "50000",
+             "cdate": (now - timedelta(days=15)).isoformat(), "edate": recent, "mdate": recent},
+        ],
+        "contact_lists": [
+            {"contact": "10", "list": "1", "status": "1"},
+            {"contact": "11", "list": "1", "status": "1"},
+        ],
+        "cutoff": now - timedelta(days=90),
+    }
+    r = win_loss_report.analyze(data)
+    md = win_loss_report.render_markdown(r)
+    assert "# Win/Loss Report" in md
+    assert "## By source list" in md

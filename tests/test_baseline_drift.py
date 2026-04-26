@@ -29,3 +29,12 @@ def test_no_drift_when_aligned():
     baseline = {"open_rate_p50": 0.30, "click_rate_p50": 0.04, "unsub_rate": 0.005}
     r = baseline_drift.analyze(current, baseline)
     assert all(d["significant"] is False for d in r["drifts"])
+
+
+def test_render_markdown_includes_sections():
+    current = {"campaigns": 5, "open_rate_mean": 0.20, "click_rate_mean": 0.02, "unsub_rate_mean": 0.001}
+    baseline = {"open_rate_p50": 0.30, "click_rate_p50": 0.04, "unsub_rate": 0.005}
+    r = baseline_drift.analyze(current, baseline)
+    md = baseline_drift.render_markdown(r)
+    assert "# Baseline Drift Check" in md
+    assert "Campaigns in current window: 5" in md

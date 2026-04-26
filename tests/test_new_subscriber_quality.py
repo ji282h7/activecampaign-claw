@@ -35,3 +35,19 @@ def test_zero_new_contacts():
     r = new_subscriber_quality.analyze(data, days=30)
     assert r["new_contacts"] == 0
     assert r["open_rate_of_new"] == 0
+
+
+def test_render_markdown_includes_sections():
+    now = datetime.now(timezone.utc)
+    recent = (now - timedelta(days=10)).isoformat()
+    data = {
+        "contacts": [
+            {"id": "1", "cdate": recent, "status": "1"},
+            {"id": "2", "cdate": recent, "status": "2"},
+        ],
+        "activities": [{"event": "open", "contact": "1"}],
+    }
+    r = new_subscriber_quality.analyze(data, days=30)
+    md = new_subscriber_quality.render_markdown(r)
+    assert "# New Subscriber Quality" in md
+    assert "New contacts" in md

@@ -32,3 +32,20 @@ def test_word_count_and_cta_correlation():
 def test_empty_input():
     r = clr.analyze({"campaigns": [], "messages": []})
     assert r["rows"] == []
+
+
+def test_render_markdown_includes_sections():
+    data = {
+        "campaigns": [
+            {
+                "id": "1", "subject": "S", "send_amt": "100", "uniqueopens": "20",
+                "uniquelinkclicks": "5", "messages": [{"id": "100"}],
+            },
+        ],
+        "messages": [{"id": "100", "html": "<p>Short body. <a>Click here</a></p>"}],
+    }
+    r = clr.analyze(data)
+    md = clr.render_markdown(r)
+    assert "# Content Length & CTA Analysis" in md
+    assert "Click rate by length bucket" in md
+    assert "Click rate by CTA count" in md
