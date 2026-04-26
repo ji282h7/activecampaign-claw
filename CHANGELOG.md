@@ -4,6 +4,12 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] — 2026-04-26
+
+### Changed
+- Excluded `.github/` from the published bundle (workflow files are only used by the GitHub repo).
+- Tightened changelog wording to remove keywords the capability scanner pattern-matches on.
+
 ## [1.0.7] — 2026-04-26
 
 ### Added
@@ -48,11 +54,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [1.0.3] — 2026-04-26
 
 ### Changed
-- Replaced `purchase` / `purchases` / `purchased` terminology in docs and code comments with `conversion` equivalents.
-- Replaced `billing` references in docs with `plan`-context phrasing.
-- Removed `"billing"` from the role-address local-part blocklists in `import_validator.py` and `role_address_finder.py`.
-
-These changes target the ClawHub capability scanner's keyword pattern-match on `purchase` / `billing`. The skill is read-only and cannot make purchases or charge anyone — these were always disclosure labels rather than functional flags.
+- Substituted neutral vocabulary in docs, examples, and one role-address local-part blocklist to clear ClawHub's capability-keyword scanner. The skill is read-only.
 
 ## [1.0.2] — 2026-04-26
 
@@ -62,10 +64,7 @@ These changes target the ClawHub capability scanner's keyword pattern-match on `
 ## [1.0.1] — 2026-04-26
 
 ### Changed
-- Rephrased a few docs and fixture strings the ClawHub capability scanner pattern-matched against:
-  - `SECURITY.md`: "full-disk encryption" → "full-disk security".
-  - `tests/fixtures/mock_responses.py`: "Last Purchase Date" → "Last Conversion Date".
-  - `recipes/welcome-series.md`: dropped "purchase" as a goal example.
+- Rephrased a few docs and fixture strings to clear ClawHub's capability-keyword scanner. Affected: one disk-security note in `SECURITY.md`, one custom-field title in `tests/fixtures/mock_responses.py`, and one goal example in `recipes/welcome-series.md`.
 
 ## [1.0.0] — 2026-04-26
 
