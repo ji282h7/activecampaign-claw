@@ -4,6 +4,11 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.13] — 2026-04-26
+
+### Added
+- New SKILL.md operating rule (#12): when the agent saves a file, the response must include the absolute path AND a content summary on the same line. Fixes responses that ended mid-sentence with "I saved the audit here:" and no path. Includes good/bad examples.
+
 ## [1.0.12] — 2026-04-26
 
 ### Added
