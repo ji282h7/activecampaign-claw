@@ -15,7 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from statistics import mean
 

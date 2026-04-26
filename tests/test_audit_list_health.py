@@ -1,16 +1,11 @@
 """Tests for audit_list_health.py — list health audit script."""
 
-import json
 import sys
 from pathlib import Path
-from unittest.mock import patch
-
-import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from fixtures.mock_responses import (
-    CONTACTS_META_TOTAL,
     BOUNCE_LOGS,
     make_campaigns,
     make_contacts_with_engagement,
@@ -127,7 +122,7 @@ class TestGenerateReport:
 
 class TestFormatMarkdown:
     def test_produces_valid_markdown(self, sample_state):
-        from audit_list_health import generate_report, format_markdown
+        from audit_list_health import format_markdown, generate_report
 
         domains = {
             "domains": {"gmail.com": {"count": 200, "pct": 0.40}},

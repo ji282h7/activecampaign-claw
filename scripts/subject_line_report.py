@@ -15,13 +15,11 @@ from __future__ import annotations
 import argparse
 import json
 import re
-from collections import defaultdict
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from statistics import mean
 
 from _ac_client import ACClient
-
 
 URGENCY_WORDS = re.compile(r"\b(now|today|hurry|last\s+chance|ends|deadline|urgent|limited|expir)\b", re.I)
 PERSONALIZATION = re.compile(r"%[A-Z_]+%|\{\{[^}]+\}\}")

@@ -1,7 +1,7 @@
 """Tests for stale_contact_report.analyze()."""
 from __future__ import annotations
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 import stale_contact_report
 

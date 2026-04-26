@@ -36,14 +36,14 @@ def analyze(data: dict) -> dict:
 
     rows = []
     total_unique_clicks = 0
-    for l in data["links"]:
-        uc = _safe_int(l.get("uniquelinkclicks"))
+    for link in data["links"]:
+        uc = _safe_int(link.get("uniquelinkclicks"))
         rows.append({
-            "link_id": l.get("id"),
-            "url": l.get("link"),
-            "name": l.get("name") or "",
-            "tracked": l.get("tracked"),
-            "clicks": _safe_int(l.get("linkclicks")),
+            "link_id": link.get("id"),
+            "url": link.get("link"),
+            "name": link.get("name") or "",
+            "tracked": link.get("tracked"),
+            "clicks": _safe_int(link.get("linkclicks")),
             "unique_clicks": uc,
             "ctr_of_recipients": (uc / sent) if sent else 0,
             "ctr_of_opens": (uc / unique_opens) if unique_opens else 0,
@@ -69,11 +69,11 @@ def render_markdown(r: dict) -> str:
         "| Link | Clicks | Unique | CTR (sent) | CTR (opens) |",
         "|---|---|---|---|---|",
     ]
-    for l in r["links"]:
-        url = (l["url"] or l["name"] or "")[:80]
+    for link in r["links"]:
+        url = (link["url"] or link["name"] or "")[:80]
         lines.append(
-            f"| {url} | {l['clicks']} | {l['unique_clicks']} | "
-            f"{l['ctr_of_recipients']*100:.2f}% | {l['ctr_of_opens']*100:.1f}% |"
+            f"| {url} | {link['clicks']} | {link['unique_clicks']} | "
+            f"{link['ctr_of_recipients']*100:.2f}% | {link['ctr_of_opens']*100:.1f}% |"
         )
     return "\n".join(lines)
 

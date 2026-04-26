@@ -4,9 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 import import_validator
+import pytest
 
 
 def _write_csv(tmp_path: Path, rows: list[str]) -> Path:

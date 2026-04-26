@@ -18,12 +18,19 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from pathlib import Path
 
 from _ac_client import (
-    ACClient, ensure_state, log_outcome, sanitize, write_report,
-    compare_to_previous, detect_patterns, load_history, write_insight,
+    ACClient,
+    compare_to_previous,
+    detect_patterns,
+    ensure_state,
+    load_history,
+    log_outcome,
+    sanitize,
+    write_insight,
+    write_report,
 )
 
 
@@ -182,20 +189,20 @@ def format_markdown(leads: list[dict], top: int) -> str:
     lines.append("## Top leads by heat score\n")
     lines.append("| Rank | Name | Email | AC Score | Heat | Top signal | Action |")
     lines.append("|---|---|---|---|---|---|---|")
-    for i, l in enumerate(display, 1):
-        top_signal = l["signals"][0] if l["signals"] else "—"
+    for i, lead in enumerate(display, 1):
+        top_signal = lead["signals"][0] if lead["signals"] else "—"
         lines.append(
-            f"| {i} | {l['name'] or '—'} | {l['email']} | "
-            f"{l['score']:.0f} | **{l['heat']}** | {top_signal} | {l['action']} |"
+            f"| {i} | {lead['name'] or '—'} | {lead['email']} | "
+            f"{lead['score']:.0f} | **{lead['heat']}** | {top_signal} | {lead['action']} |"
         )
 
     lines.append("\n## Signal details\n")
-    for i, l in enumerate(display, 1):
-        lines.append(f"### {i}. {l['name'] or l['email']}")
-        for s in l["signals"]:
+    for i, lead in enumerate(display, 1):
+        lines.append(f"### {i}. {lead['name'] or lead['email']}")
+        for s in lead["signals"]:
             lines.append(f"  - {s}")
-        if l["deals"]:
-            for d in l["deals"]:
+        if lead["deals"]:
+            for d in lead["deals"]:
                 lines.append(f"  - Deal: {d['title']} (${d['value']/100:,.0f})")
         lines.append("")
 

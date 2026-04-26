@@ -38,7 +38,6 @@ def _norm_email(e: str) -> str:
 def _name_company_key(c: dict) -> str:
     fn = (c.get("firstName") or "").strip().lower()
     ln = (c.get("lastName") or "").strip().lower()
-    org = ""  # contact.organization is usually a separate fetch; skip for now
     if fn and ln:
         return f"{fn}|{ln}"
     return ""

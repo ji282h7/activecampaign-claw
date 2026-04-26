@@ -1,19 +1,13 @@
 """Tests for find_hot_leads.py — hot lead ranking script."""
 
-import json
 import sys
 from pathlib import Path
-from unittest.mock import patch
-
-import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from fixtures.mock_responses import (
     make_contacts_with_engagement,
     make_deals,
-    CONTACT_SCORE_VALUES,
-    TAGS,
 )
 
 
@@ -95,8 +89,8 @@ class TestScoreLeads:
         high_leads = score_leads(contacts, deals, sample_state, min_score=80)
 
         assert len(high_leads) <= len(all_leads)
-        for l in high_leads:
-            assert l["heat"] >= 80
+        for lead in high_leads:
+            assert lead["heat"] >= 80
 
     def test_signals_populated(self, ac_client_factory, sample_state):
         client = _build_lead_test_client(ac_client_factory)
@@ -120,8 +114,8 @@ class TestFormatMarkdown:
         from find_hot_leads import (
             fetch_contacts_with_scores,
             fetch_open_deals_by_contact,
-            score_leads,
             format_markdown,
+            score_leads,
         )
         contacts = fetch_contacts_with_scores(client, max_contacts=20)
         deals = fetch_open_deals_by_contact(client)

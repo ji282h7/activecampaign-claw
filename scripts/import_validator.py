@@ -18,8 +18,7 @@ import argparse
 import csv
 import json
 import re
-import sys
-from collections import Counter, defaultdict
+from collections import Counter
 from pathlib import Path
 
 EMAIL_RE = re.compile(r"^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$")

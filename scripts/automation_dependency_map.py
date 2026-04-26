@@ -32,7 +32,6 @@ def fetch(client: ACClient) -> dict:
 def analyze(data: dict) -> dict:
     auto_by_id = {str(a["id"]): a for a in data["automations"]}
     tag_by_id = {str(t["id"]): t.get("tag", "") for t in data["tags"]}
-    list_by_id = {str(l["id"]): l.get("name", "") for l in data["lists"]}
 
     blocks_by_auto = defaultdict(list)
     for b in data["blocks"]:
@@ -45,7 +44,6 @@ def analyze(data: dict) -> dict:
         sends_messages = set()
         for b in blocks_by_auto.get(aid, []):
             btype = b.get("type") or ""
-            params = b.get("params") or b.get("series") or {}
             params_blob = json.dumps(b)
             if btype in ("tag", "addtag", "tagadd"):
                 # try params.tag or numeric ids in blob

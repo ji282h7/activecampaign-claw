@@ -1,6 +1,5 @@
 """Tests for calibrate.py — account calibration script."""
 
-import json
 import sys
 from pathlib import Path
 from unittest.mock import patch
@@ -10,17 +9,8 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 from fixtures.mock_responses import (
-    USERS_ME,
-    LISTS,
-    TAGS,
-    FIELDS,
-    DEAL_CUSTOM_FIELD_META,
-    DEAL_GROUPS,
-    DEAL_STAGES,
-    AUTOMATIONS,
-    CONTACTS_META_TOTAL,
     CONTACTS_META_NEW,
-    make_campaigns,
+    CONTACTS_META_TOTAL,
 )
 
 
@@ -172,12 +162,11 @@ class TestMainIntegration:
         client = ac_client_factory({"contacts": contacts_router})
 
         import calibrate
-        from _ac_client import save_state, STATE_FILE
 
         with patch("_ac_client.STATE_DIR", tmp_state_dir), \
              patch("_ac_client.STATE_FILE", tmp_state_dir / "state.json"), \
              patch("calibrate.ACClient", return_value=client), \
-             patch("calibrate.save_state") as mock_save:
+             patch("calibrate.save_state"):
 
             # Manually run the pieces
             tax = calibrate.fetch_taxonomy(client)

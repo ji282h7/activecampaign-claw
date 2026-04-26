@@ -24,8 +24,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from _ac_client import (
-    ACClient, ensure_state, log_outcome, sanitize, write_report,
-    compare_to_previous, detect_patterns, load_history, write_insight,
+    ACClient,
+    compare_to_previous,
+    detect_patterns,
+    ensure_state,
+    load_history,
+    log_outcome,
+    sanitize,
+    write_insight,
+    write_report,
 )
 
 

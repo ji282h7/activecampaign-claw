@@ -19,7 +19,7 @@ import json
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from _ac_client import ACClient, write_report
+from _ac_client import ACClient
 
 
 def fetch_data(client: ACClient) -> dict:

@@ -20,7 +20,6 @@ from pathlib import Path
 
 from _ac_client import ACClient
 
-
 REF_PATTERNS = {
     "tag": re.compile(r'"tag"\s*:\s*"?(\d+)"?'),
     "field": re.compile(r'"field"\s*:\s*"?(\d+)"?'),
@@ -43,7 +42,7 @@ def fetch(client: ACClient) -> dict:
         "valid": {
             "tag": {str(t["id"]) for t in tags},
             "field": {str(f["id"]) for f in fields},
-            "list": {str(l["id"]) for l in lists},
+            "list": {str(lst["id"]) for lst in lists},
             "message": {str(m["id"]) for m in messages},
             "automation": {str(a["id"]) for a in automations},
         },

@@ -37,7 +37,7 @@ def analyze(data: dict, min_overlap: int) -> dict:
 
     multi = [(cid, autos) for cid, autos in autos_by_contact.items() if len(autos) >= 3]
     pair_counts = defaultdict(int)
-    for cid, autos in autos_by_contact.items():
+    for autos in autos_by_contact.values():
         if len(autos) < 2:
             continue
         for a, b in combinations(sorted(autos), 2):

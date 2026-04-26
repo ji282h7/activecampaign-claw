@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from _ac_client import ACClient
@@ -47,11 +47,6 @@ def analyze(contacts: list, window_days: int, project_days: int) -> dict:
         if cd and cd >= window_start:
             new_in_window += 1
     # crude: count current unsub/bounce as proxy; a true churn calc needs status-change history
-    # use udate on unsub/bounce contacts as approximate
-    for c in contacts:
-        # status field on /contacts is null per earlier probe; can't reliably scope
-        pass
-
     daily_growth = (new_in_window - suppressed_in_window) / max(window_days, 1)
     projected_size = total + daily_growth * project_days
     return {

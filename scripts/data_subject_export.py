@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
 
 from _ac_client import ACClient, ACClientError
@@ -36,7 +35,7 @@ def fetch(client: ACClient, email: str) -> dict:
         ("contactAutomations", "contactAutomations"),
     ]:
         try:
-            r = client.paginate(endpoint, key, params={f"filters[contact]": cid}, max_items=10000)
+            r = client.paginate(endpoint, key, params={"filters[contact]": cid}, max_items=10000)
             out[key] = r
         except ACClientError as e:
             out[key] = {"error": str(e)}

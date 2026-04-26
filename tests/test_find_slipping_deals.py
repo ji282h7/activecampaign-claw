@@ -1,12 +1,8 @@
 """Tests for find_slipping_deals.py — deal hygiene script."""
 
-import json
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from unittest.mock import patch
-
-import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
@@ -69,8 +65,8 @@ class TestFetchOpenDeals:
 class TestAnalyzeDeals:
     def test_identifies_slipping(self, ac_client_factory, sample_state):
         deals_data = _make_deals_with_dates()
-        client = ac_client_factory({"deals": deals_data})
-        from find_slipping_deals import fetch_open_deals, analyze_deals
+        ac_client_factory({"deals": deals_data})
+        from find_slipping_deals import analyze_deals
         deals = deals_data["deals"]
         analysis = analyze_deals(deals, sample_state, stale_days=14)
 

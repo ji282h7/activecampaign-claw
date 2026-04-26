@@ -22,8 +22,15 @@ from collections import Counter
 from pathlib import Path
 
 from _ac_client import (
-    ACClient, ensure_state, log_outcome, sanitize, write_report,
-    compare_to_previous, detect_patterns, load_history, write_insight,
+    ACClient,
+    compare_to_previous,
+    detect_patterns,
+    ensure_state,
+    load_history,
+    log_outcome,
+    sanitize,
+    write_insight,
+    write_report,
 )
 
 
@@ -119,7 +126,6 @@ def generate_report(state: dict, domains: dict, bounces: dict,
     growth_rate = growth.get("growth_rate_30d", 0)
 
     baseline_open = baselines.get("open_rate_p50", 0.25)
-    baseline_unsub = baselines.get("unsub_rate_p50", 0.003)
 
     recent = campaign_health.get("recent_campaigns", [])
     avg_open = (
@@ -200,7 +206,7 @@ def format_markdown(report: dict, account_url: str) -> str:
     h = report["headline"]
     lines = []
 
-    lines.append(f"## Headline metrics\n")
+    lines.append("## Headline metrics\n")
     lines.append("| Metric | Value | Baseline | Status |")
     lines.append("|---|---|---|---|")
     lines.append(

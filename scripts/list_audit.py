@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from collections import Counter, defaultdict
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -70,8 +70,8 @@ def analyze(data: dict) -> dict:
                 last_campaign[lid] = (c.get("id"), sdate)
 
     rows = []
-    for l in data["lists"]:
-        lid = str(l["id"])
+    for lst in data["lists"]:
+        lid = str(lst["id"])
         active = by_list_active.get(lid, 0)
         unsub = by_list_unsub.get(lid, 0)
         bounce = by_list_bounce.get(lid, 0)
@@ -81,7 +81,7 @@ def analyze(data: dict) -> dict:
         days = _days_since(last_sent) if last_sent else None
         rows.append({
             "id": lid,
-            "name": l.get("name", ""),
+            "name": lst.get("name", ""),
             "active": active,
             "unsubscribed": unsub,
             "bounced": bounce,
@@ -104,12 +104,12 @@ def render_markdown(r: dict) -> str:
         "| List | Active | Unsub | Bounce | Total | Days since last send |",
         "|---|---|---|---|---|---|",
     ]
-    for l in r["lists"]:
-        days = l["days_since_last_send"]
+    for lst in r["lists"]:
+        days = lst["days_since_last_send"]
         days_s = "never" if days is None else f"{days}"
         lines.append(
-            f"| {l['name']} | {l['active']} | {l['unsubscribed']} | "
-            f"{l['bounced']} | {l['total']} | {days_s} |"
+            f"| {lst['name']} | {lst['active']} | {lst['unsubscribed']} | "
+            f"{lst['bounced']} | {lst['total']} | {days_s} |"
         )
     return "\n".join(lines)
 

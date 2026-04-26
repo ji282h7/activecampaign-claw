@@ -1,7 +1,7 @@
 """Tests for mql_to_sql_handoff.analyze() — Deals-feature-required script."""
 from __future__ import annotations
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 import mql_to_sql_handoff
 

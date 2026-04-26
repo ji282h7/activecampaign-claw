@@ -3,10 +3,9 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-import pytest
-
 import _ac_client
 import data_subject_export
+import pytest
 
 
 def _client():

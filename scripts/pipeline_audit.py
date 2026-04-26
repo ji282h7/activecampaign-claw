@@ -33,7 +33,7 @@ def fetch(client: ACClient) -> dict:
         deal_field_data = client.paginate("dealCustomFieldData", "dealCustomFieldData", max_items=50000)
     except ACClientError as e:
         if e.status_code == 403:
-            raise SystemExit("ERROR: Deals feature is not enabled on this account. pipeline_audit requires Deals.")
+            raise SystemExit("ERROR: Deals feature is not enabled on this account. pipeline_audit requires Deals.") from e
         raise
     return {
         "pipelines": pipelines,
@@ -57,8 +57,6 @@ def _days_ago(iso_str):
 
 
 def analyze(data: dict) -> dict:
-    stages_by_id = {s["id"]: s for s in data["stages"]}
-    pipelines_by_id = {p["id"]: p for p in data["pipelines"]}
     deals_by_pipeline = defaultdict(list)
     deals_by_stage = defaultdict(list)
     for d in data["deals"]:

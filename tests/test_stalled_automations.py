@@ -1,7 +1,7 @@
 """Tests for stalled_automations.analyze()."""
 from __future__ import annotations
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 import stalled_automations
 

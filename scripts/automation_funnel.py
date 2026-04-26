@@ -29,7 +29,6 @@ def fetch(client: ACClient, automation_id: str) -> dict:
 
 def analyze(data: dict) -> dict:
     blocks = sorted(data["blocks"], key=lambda b: int(b.get("ordernum") or 0))
-    block_count_by_id = {b["id"]: 0 for b in blocks}
     by_status = Counter()
     last_block_count = Counter()
     for ca in data["contact_automations"]:

@@ -20,7 +20,6 @@ from pathlib import Path
 from _ac_client import ACClient
 from export_account import fetch as export_fetch  # type: ignore
 
-
 DEFAULT_DIR = Path.home() / ".activecampaign-skill" / "snapshots"
 
 

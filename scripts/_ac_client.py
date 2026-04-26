@@ -19,18 +19,17 @@ import sys
 import tempfile
 import time
 
-if sys.version_info < (3, 9):
+if sys.version_info < (3, 9):  # noqa: UP036 - friendly error for users running scripts directly
     sys.stderr.write(
         f"ERROR: Python 3.9 or newer required (you have {sys.version_info.major}.{sys.version_info.minor}).\n"
     )
     sys.exit(1)
+import urllib.error
+import urllib.request
+from collections import Counter
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urlencode
-import urllib.request
-import urllib.error
-
-from collections import Counter
 
 STATE_DIR = Path.home() / ".activecampaign-skill"
 STATE_FILE = STATE_DIR / "state.json"
@@ -131,15 +130,15 @@ class ACClient:
                     continue
                 if e.code == 422:
                     body = e.read().decode("utf-8", errors="replace")
-                    raise ACClientError(422, body)
+                    raise ACClientError(422, body) from e
                 if e.code in (401, 403):
                     raise ACClientError(
                         e.code,
                         "Authentication failed. Check AC_API_URL and AC_API_TOKEN.",
-                    )
+                    ) from e
                 if e.code == 404:
-                    raise ACClientError(404, f"Resource not found: {path}")
-                raise ACClientError(e.code, str(e))
+                    raise ACClientError(404, f"Resource not found: {path}") from e
+                raise ACClientError(e.code, str(e)) from e
 
             except urllib.error.URLError as e:
                 last_error = e
@@ -386,7 +385,7 @@ def load_history(recipe: str | None = None, limit: int = 50) -> list[dict]:
         return []
     entries = []
     try:
-        with open(HISTORY_FILE, "r") as f:
+        with open(HISTORY_FILE) as f:
             for line in f:
                 line = line.strip()
                 if not line:

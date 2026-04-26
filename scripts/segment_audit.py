@@ -41,7 +41,7 @@ def fetch(client: ACClient, skip_counts: bool) -> dict:
         "segments": segments,
         "tags": {str(t["id"]): t.get("tag", "") for t in tags},
         "fields": {str(f["id"]): f.get("title", "") for f in fields},
-        "lists": {str(l["id"]): l.get("name", "") for l in lists},
+        "lists": {str(lst["id"]): lst.get("name", "") for lst in lists},
         "counts": counts,
     }
 
@@ -51,21 +51,9 @@ def analyze(data: dict) -> dict:
     empty = []
     broken = []
 
-    valid_tag_ids = set(data["tags"].keys())
-    valid_field_ids = set(data["fields"].keys())
-    valid_list_ids = set(data["lists"].keys())
-
     for s in data["segments"]:
         sid = s["id"]
         count = data["counts"].get(sid)
-        # Conditions are returned as nested objects in v3; serialize and look for ids
-        conditions_blob = json.dumps(s.get("conditions") or s.get("logic") or s)
-        # heuristic: extract ids that look like field/tag/list refs
-        broken_refs = []
-        # AC encodes refs in a few formats; we check explicit nested fields when present
-        for key in ("tag", "tagid"):
-            if key in conditions_blob:
-                pass  # fine; deeper validation would need to parse the rule tree
         rows.append({
             "id": sid,
             "name": s.get("name"),

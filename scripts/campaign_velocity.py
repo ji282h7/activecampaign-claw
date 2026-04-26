@@ -15,7 +15,7 @@ from __future__ import annotations
 import argparse
 import json
 from collections import defaultdict
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from statistics import mean
 
@@ -54,7 +54,7 @@ def fetch(client: ACClient, days: int) -> dict:
 
 
 def analyze(data: dict, days: int) -> dict:
-    list_name = {str(l["id"]): l.get("name", "") for l in data["lists"]}
+    list_name = {str(lst["id"]): lst.get("name", "") for lst in data["lists"]}
     sends_by_list = defaultdict(list)
     total_recipients = 0
 

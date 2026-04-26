@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from _ac_client import ACClient, ACClientError
@@ -55,7 +55,7 @@ def fetch(client: ACClient) -> dict:
         deals = client.paginate("deals", "deals", max_items=20000)
     except ACClientError as e:
         if e.status_code == 403:
-            raise SystemExit("ERROR: Deals feature is not enabled on this account.")
+            raise SystemExit("ERROR: Deals feature is not enabled on this account.") from e
         raise
     return {"contacts": contacts, "scores": scores, "deals": deals}
 

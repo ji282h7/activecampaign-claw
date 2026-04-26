@@ -28,7 +28,7 @@ def fetch(client: ACClient) -> dict:
 
 
 def analyze(data: dict, min_overlap: int) -> dict:
-    list_name = {str(l["id"]): l.get("name", "") for l in data["lists"]}
+    list_name = {str(lst["id"]): lst.get("name", "") for lst in data["lists"]}
     members = defaultdict(set)  # list_id -> set of contact ids (active only)
     for cl in data["contact_lists"]:
         if str(cl.get("status")) == "1":

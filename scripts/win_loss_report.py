@@ -16,7 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 from collections import defaultdict
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from statistics import mean
 
@@ -48,7 +48,7 @@ def fetch(client: ACClient, days: int) -> dict:
         deals = client.paginate("deals", "deals", max_items=20000)
     except ACClientError as e:
         if e.status_code == 403:
-            raise SystemExit("ERROR: Deals feature is not enabled on this account.")
+            raise SystemExit("ERROR: Deals feature is not enabled on this account.") from e
         raise
     closed = []
     for d in deals:
@@ -97,12 +97,12 @@ def analyze(data: dict) -> dict:
 
     rows = []
     for lid, b in by_list.items():
-        w, l = len(b["won"]), len(b["lost"])
-        total = w + l
+        w, lost_n = len(b["won"]), len(b["lost"])
+        total = w + lost_n
         rows.append({
             "list": lid,
             "won": w,
-            "lost": l,
+            "lost": lost_n,
             "win_rate": (w / total) if total else 0,
             "avg_won_value": mean(b["won"]) if b["won"] else 0,
         })

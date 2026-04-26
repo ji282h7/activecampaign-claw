@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pytest
 
@@ -21,21 +21,18 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 sys.path.insert(0, str(Path(__file__).parent))
 
 from fixtures.mock_responses import (
-    USERS_ME,
-    LISTS,
-    TAGS,
-    FIELDS,
+    AUTOMATIONS,
+    CONTACTS_META_TOTAL,
     DEAL_CUSTOM_FIELD_META,
     DEAL_GROUPS,
     DEAL_STAGES,
-    AUTOMATIONS,
-    CONTACTS_META_TOTAL,
-    CONTACTS_META_NEW,
+    FIELDS,
+    LISTS,
     SCORES,
+    TAGS,
+    USERS_ME,
     make_campaigns,
     make_deals,
-    make_contacts_with_engagement,
-    BOUNCE_LOGS,
 )
 
 

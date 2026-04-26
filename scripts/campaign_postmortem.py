@@ -64,12 +64,12 @@ def analyze(data: dict, baseline: dict) -> dict:
     base_unsub = baseline.get("unsub_rate", 0.003)
 
     link_rows = []
-    for l in data["links"]:
-        lc = _safe_int(l.get("linkclicks"))
-        ulc = _safe_int(l.get("uniquelinkclicks"))
+    for link in data["links"]:
+        lc = _safe_int(link.get("linkclicks"))
+        ulc = _safe_int(link.get("uniquelinkclicks"))
         link_rows.append({
-            "url": l.get("link"),
-            "name": l.get("name"),
+            "url": link.get("link"),
+            "name": link.get("name"),
             "clicks": lc,
             "unique_clicks": ulc,
             "ctr_of_opens": (ulc / unique_opens) if unique_opens else 0,
@@ -133,9 +133,9 @@ def render_markdown(r: dict) -> str:
         lines.append("## Top links")
         lines.append("| Link | Unique clicks | CTR-of-opens |")
         lines.append("|---|---|---|")
-        for l in r["links"][:15]:
-            url = l["url"][:80] if l["url"] else l["name"]
-            lines.append(f"| {url} | {l['unique_clicks']} | {l['ctr_of_opens']*100:.1f}% |")
+        for link in r["links"][:15]:
+            url = link["url"][:80] if link["url"] else link["name"]
+            lines.append(f"| {url} | {link['unique_clicks']} | {link['ctr_of_opens']*100:.1f}% |")
     if r["activity_event_count"] == 0:
         lines.append("")
         lines.append("_(No per-event activity records returned by AC for this campaign.)_")

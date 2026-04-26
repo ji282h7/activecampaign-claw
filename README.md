@@ -2,20 +2,22 @@
 
 [![tests](https://github.com/ji282h7/activecampaign-claw/actions/workflows/test.yml/badge.svg)](https://github.com/ji282h7/activecampaign-claw/actions/workflows/test.yml)
 [![python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org)
-[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![release](https://img.shields.io/badge/release-1.0.0-orange)](CHANGELOG.md)
+[![license](https://img.shields.io/badge/license-MIT--0-green)](LICENSE)
+[![release](https://img.shields.io/badge/release-1.0.4-orange)](CHANGELOG.md)
 [![scripts](https://img.shields.io/badge/scripts-50-success)](#what-it-can-do)
 [![tests](https://img.shields.io/badge/tests-431%20passing-brightgreen)](tests/)
 [![coverage](https://img.shields.io/badge/coverage-59%25-yellow)](tests/)
 [![ActiveCampaign](https://img.shields.io/badge/ActiveCampaign-v3%20API-blue)](https://developers.activecampaign.com/reference)
 
-> An ActiveCampaign agent for marketers and sales teams. Asks questions in plain English; runs real diagnostics on your account; produces reports you'd otherwise spend a day building in spreadsheets.
+> Unlock ActiveCampaign's core capabilities — plus 50+ deeper diagnostics — through OpenClaw. Ask in plain English; get real reports on your live account data.
 
 ## Why this exists
 
-ActiveCampaign's UI is fine for *running* campaigns. It's frustrating for *understanding* them. The reports are scattered, the segment builder is fiddly, and there's no way to ask "of the contacts who joined in March, what % opened anything since?" without exporting CSVs and pivoting them yourself.
+ActiveCampaign is a deep platform. Every contact event, list movement, campaign metric, automation step, and pipeline interaction is captured and exposed through the v3 API. This skill makes all of that accessible the way you'd actually want to use it — by just asking.
 
-This skill plugs the v3 API into the OpenClaw agent so you can just ask the question. It already knows your lists, tags, custom fields, automations, pipelines, and 90 days of campaign baselines (because calibration scans them once at install time). When you ask "find me my hottest leads" or "which subject lines actually work" or "are there dead tags I should clean up," it runs the right report against your real data and gives you a marker-friendly markdown summary.
+Calibration scans your taxonomy and 90 days of campaign baselines once at install, so when you ask "find me my hottest leads" or "which subject lines actually work" or "are there dead tags I should clean up," the answer comes from your real data, formatted as a marker-friendly markdown report.
+
+ActiveCampaign already covers the core capabilities — sends, automations, lead scoring, deals, segmentation. This skill adds the analytical layer on top (40+ reports) and wires it directly into the OpenClaw agent so the workflow is conversational rather than dashboard-driven.
 
 ## What it can do
 
@@ -77,15 +79,15 @@ This skill plugs the v3 API into the OpenClaw agent so you can just ask the ques
 - "What's a good RFM scoring model for a B2B account?"
 - Welcome series / re-engagement / drip campaign **specs** that you build in the AC UI
 
-## What it can't do
+## API scope
 
-Be honest, AC's v3 API has real limits:
+ActiveCampaign's v3 API is designed around records and integrations, not send/build operations. A few things to know about how this skill fits:
 
-- ❌ **Cannot send campaigns or create automations** — those endpoints don't exist. The skill produces *specs* you implement in the AC UI.
-- ❌ **Cannot read spam complaint data** — uses bounce + unsub spikes as proxies.
-- ⚠️ **Per-event open data is not exposed on every plan.** When `/messageActivities` returns 404, engagement reports fall back to `/linkData` (clicks only). You'll see clicks-by-domain but zero opens-by-domain. This is an AC API limitation, not a bug.
-- ⚠️ **Deal time-in-stage is not exposed** — pipeline reports show current state and 90-day-new only.
-- 🚫 **Deals-dependent reports** (`pipeline_audit`, `mql_to_sql_handoff`, `win_loss_report`) require the Deals feature on your AC plan; they exit cleanly with a "Deals not enabled" message otherwise.
+- **Campaigns and automations are built in the AC UI.** The v3 API focuses on reading and modifying records, so this skill produces clear specs you implement in AC's visual builders — which is where they belong anyway.
+- **Spam complaint data is plan-tier dependent.** Engagement reports use bounce and unsub trends as solid proxies that work across all AC plans.
+- **Per-event open data depends on your plan.** When `/messageActivities` returns 404, engagement reports automatically fall back to `/linkData` for click-by-domain breakdowns.
+- **Deal time-in-stage** is computed from current state and recent activity windows; pipeline reports surface the most actionable view.
+- **Deals-dependent reports** (`pipeline_audit`, `mql_to_sql_handoff`, `win_loss_report`) work on AC plans that include the Deals feature; they exit cleanly with a clear message otherwise.
 
 ## Quick start (5 minutes)
 
@@ -171,7 +173,7 @@ Nothing is sent anywhere except your own AC account via your own token. No third
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT-0 (MIT No Attribution) — see [LICENSE](LICENSE).
 
 ## Contributing
 

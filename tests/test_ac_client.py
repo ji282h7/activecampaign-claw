@@ -1,13 +1,12 @@
 """Tests for _ac_client.py — shared API client and utilities."""
 
 import json
-from datetime import datetime, timezone, timedelta
-from unittest.mock import patch, MagicMock
+import sys
 import urllib.error
+from pathlib import Path
+from unittest.mock import MagicMock, patch
 
 import pytest
-import sys
-from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
@@ -208,7 +207,6 @@ class TestBackoffDelay:
         assert delay >= 0
 
     def test_increases_with_attempts(self):
-        delays = [_ac_client.ACClient._backoff_delay(i, base=1.0, cap=60.0) for i in range(5)]
         # With jitter, individual values may vary, but the cap should grow
         # Test the max possible delay grows
         for i in range(4):

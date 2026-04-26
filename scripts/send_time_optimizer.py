@@ -20,7 +20,6 @@ from pathlib import Path
 
 from _ac_client import ACClient, load_state
 
-
 DOW = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 

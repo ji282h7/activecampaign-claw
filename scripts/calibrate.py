@@ -85,8 +85,8 @@ def fetch_taxonomy(client: ACClient) -> dict:
 
     return {
         "lists": [
-            {"id": l["id"], "name": sanitize(l["name"]), "stringid": l.get("stringid", "")}
-            for l in lists
+            {"id": lst["id"], "name": sanitize(lst["name"]), "stringid": lst.get("stringid", "")}
+            for lst in lists
         ],
         "tags": [
             {"id": t["id"], "name": sanitize(t["tag"]), "tagType": t.get("tagType", "contact")}
@@ -367,8 +367,8 @@ def _print_discovery_summary(state: dict, quick: bool) -> None:
     pipelines = tax.get("pipelines", [])
     automations = tax.get("automations", [])
 
-    print(f"  Taxonomy:")
-    print(f"    {len(lists)} list{'s' if len(lists) != 1 else ''}: {', '.join(l['name'] for l in lists[:5])}")
+    print("  Taxonomy:")
+    print(f"    {len(lists)} list{'s' if len(lists) != 1 else ''}: {', '.join(lst['name'] for lst in lists[:5])}")
     print(f"    {len(tags)} tag{'s' if len(tags) != 1 else ''}{': ' + ', '.join(t['name'] for t in tags[:8]) if tags else ''}")
     print(f"    {len(contact_fields)} contact field{'s' if len(contact_fields) != 1 else ''}, {len(deal_fields)} deal field{'s' if len(deal_fields) != 1 else ''}")
     if pipelines:
@@ -405,12 +405,12 @@ def _print_discovery_summary(state: dict, quick: bool) -> None:
 
         if g.get("total_contacts"):
             print()
-            print(f"  List size:")
+            print("  List size:")
             print(f"    {g['total_contacts']:,} total contacts")
             print(f"    {g.get('new_30d', 0):,} new in last 30 days ({g.get('growth_rate_30d', 0)*100:.1f}% growth)")
 
         print()
-        print(f"  Quick observations:")
+        print("  Quick observations:")
         obs_count = 0
         if b["open_rate_p50"] >= 0.25:
             print(f"    ✅ Open rate is healthy ({b['open_rate_p50']*100:.1f}% — industry avg ~21%)")
@@ -428,10 +428,10 @@ def _print_discovery_summary(state: dict, quick: bool) -> None:
             print(f"    📊 Moderate list growth ({g['growth_rate_30d']*100:.1f}% in 30 days)")
             obs_count += 1
         if not active_autos:
-            print(f"    💡 No active automations — a welcome series could work on autopilot")
+            print("    💡 No active automations — a welcome series could work on autopilot")
             obs_count += 1
         if obs_count == 0:
-            print(f"    📊 Baselines captured — ready for analysis")
+            print("    📊 Baselines captured — ready for analysis")
 
     print()
 

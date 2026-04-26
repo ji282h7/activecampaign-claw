@@ -16,8 +16,8 @@ from __future__ import annotations
 import argparse
 import json
 import socket
-import urllib.request
 import urllib.error
+import urllib.request
 from pathlib import Path
 
 from _ac_client import ACClient
