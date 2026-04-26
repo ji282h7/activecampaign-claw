@@ -4,6 +4,11 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.9] — 2026-04-26
+
+### Changed
+- Replaced the single bare-bones "Example agent interaction" in README with two concrete examples that show range: hot-leads ranking (analysis) and tag merge (maintenance with destructive-op confirm flow).
+
 ## [1.0.8] — 2026-04-26
 
 ### Changed

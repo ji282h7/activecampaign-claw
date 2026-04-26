@@ -3,7 +3,7 @@
 [![tests](https://github.com/ji282h7/activecampaign-claw/actions/workflows/test.yml/badge.svg)](https://github.com/ji282h7/activecampaign-claw/actions/workflows/test.yml)
 [![python](https://img.shields.io/badge/python-3.9%20%7C%203.10%20%7C%203.11%20%7C%203.12-blue)](https://www.python.org)
 [![license](https://img.shields.io/badge/license-MIT--0-green)](LICENSE)
-[![release](https://img.shields.io/badge/release-1.0.8-orange)](CHANGELOG.md)
+[![release](https://img.shields.io/badge/release-1.0.9-orange)](CHANGELOG.md)
 [![scripts](https://img.shields.io/badge/scripts-51-success)](#what-it-can-do)
 [![tests](https://img.shields.io/badge/tests-446%20passing-brightgreen)](tests/)
 [![coverage](https://img.shields.io/badge/coverage-59%25-yellow)](tests/)
@@ -151,17 +151,54 @@ activecampaign/
 └── tests/
 ```
 
-## Example agent interaction
+## Examples
 
-> **You:** Run a list health audit on my AC account.
+### Analysis — *"Find my hottest leads"*
 
-> **Agent:** Running `audit_list_health.py`… Your account has 12,438 active contacts across 13 lists. Found:
-> - 47 role addresses (info@, support@) on the main list — recommend suppress
-> - 8 lists overlap >95% with `Master Contact List` — consolidation candidates
-> - Bounce rate trend is +0.3pp over the last 30 days vs. baseline — investigating which campaign…
-> - 3 tags applied to >50% of contacts may have lost discriminating power
+The agent ranks contacts by a composite of AC lead score, recent engagement velocity, deal-stage progression, and content depth — not just raw score:
+
+| Rank | Name | Score | Top signal | Action |
+|---|---|---|---|---|
+| 1 | Jane S. | 92 | Opened proposal email 3× yesterday + visited pricing page | Call today |
+| 2 | Bob L. | 85 | Deal created 2 days ago, score jumped +18 in 7 days | Confirm BANT, send proposal |
+| 3 | Priya S. | 78 | Trial signup + 4 page views, downloaded whitepaper | Welcome call, qualify use case |
+
+The "top signal" column is what makes this useful — it's the *reason* the lead is hot, not just a number. You walk into the call already knowing what they care about.
+
+### Maintenance — *"Merge my duplicate tags"*
+
+The tag audit catches behavioral duplicates that string-similarity tools miss — pairs of tags applied to the same contacts with different names:
+
+```
+Tag audit — your account has 247 tags
+
+Likely duplicates (95%+ co-occurrence)
+• customer + Customer — co-occur on 1,847 contacts (case-mismatch)
+• webinar-attendee + webinar_attendee — co-occur on 312 contacts (separator typo)
+• vip + high-value-customer — co-occur on 89 contacts (semantic duplicate)
+
+Over-saturated tags (>50% of contacts — bad for filtering)
+• subscriber (96%)
+• imported-2024 (62%)
+
+Dead tags (not used in any automation or segment): 34
+```
+
+Then you can resolve any of them in the same conversation:
+
+> **You:** Merge `customer` and `Customer` into the lowercase one.
 >
-> Want me to draft the suppression workflow, or dig into the bounce trend first?
+> **Agent:** Here's the plan:
+> 1. Apply `customer` to the 12 contacts that only have `Customer`
+> 2. Remove `Customer` from all 1,847 affected contacts
+> 3. Update 3 automation references (`Welcome Series`, `Renewal Nudge`, `NPS Follow-up`) to point at `customer`
+> 4. Delete the `Customer` tag
+>
+> Total: 1 tag delete · 1,859 contact-tag updates · 3 automation patches. Confirm to proceed?
+
+The destructive operations always require explicit confirmation — the agent shows the full plan first. The standalone script (`scripts/tag_merge.py`) follows the same contract: dry-run by default, `--confirm` required to execute, refuses to delete a tag that's still referenced by an automation or segment.
+
+For more examples (subject-line lift analysis, list health audits, stalled-automation detection, re-engagement campaigns), browse the workflow recipes in [`recipes/`](recipes/).
 
 ## Where data lives
 
