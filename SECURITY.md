@@ -50,7 +50,8 @@ Out of scope:
 - AC tokens are scoped to the user that created them — rotate the token
   whenever the integration user changes.
 - Tokens are stored at `~/.openclaw/openclaw.json` (mode 0600). Anyone with
-  shell access to that user account can read them. Use full-disk encryption.
+  shell access to that user account can read them. Enable full-disk security
+  on the device.
 - The skill never sends data to third-party services — only to your own AC
   account via your own token.
 

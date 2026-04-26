@@ -41,7 +41,7 @@ FIELDS = {
     "fields": [
         {"id": "1", "title": "Plan", "type": "dropdown", "options": "Free||Pro||Enterprise"},
         {"id": "2", "title": "Company Size", "type": "text", "options": ""},
-        {"id": "3", "title": "Last Purchase Date", "type": "date", "options": ""},
+        {"id": "3", "title": "Last Conversion Date", "type": "date", "options": ""},
     ]
 }
 

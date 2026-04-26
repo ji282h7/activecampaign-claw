@@ -47,7 +47,7 @@ Parameterized: replace `[segment]`, `[product]`, `[tone]`, and `[CTA]` with acco
 | Body | One specific use case or feature. Screenshot or short walkthrough. Social proof (one stat or testimonial). |
 | CTA | "Try [specific feature] now" |
 
-**AC config:** Wait 2 days. Condition: did NOT complete goal (purchase / activation).
+**AC config:** Wait 2 days. Condition: did NOT complete the activation goal.
 
 ### Email 3 — Social proof (Day 5)
 
@@ -114,7 +114,7 @@ curl -s -X POST -H "Api-Token: $AC_API_TOKEN" \
 | `tone` | professional | casual, technical, executive |
 | `email_count` | 4 | 3-7 (adjust wait times proportionally) |
 | `total_days` | 10 | 7-30 |
-| `goal` | tag applied | deal created, purchase made, form submitted |
+| `goal` | tag applied | deal created, activation event, form submitted |
 | `cta_type` | button | text link, reply-to |
 
 ## Best practices (from `frameworks/email-best-practices.md`)
