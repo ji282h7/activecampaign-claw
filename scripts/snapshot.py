@@ -17,7 +17,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from _ac_client import ACClient
+from _ac_client import ACClient, emit_files
 from export_account import fetch as export_fetch  # type: ignore
 
 DEFAULT_DIR = Path.home() / ".activecampaign-skill" / "snapshots"
@@ -56,6 +56,8 @@ def main():
             },
         }) + "\n")
     print(f"Wrote {out_path} ({sz:,} bytes)")
+    print(f"Wrote {manifest}")
+    emit_files(out_path, manifest)
 
 
 if __name__ == "__main__":

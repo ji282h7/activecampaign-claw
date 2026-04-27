@@ -366,6 +366,22 @@ def write_report(title: str, content: str, to_file: Path | None = None) -> str:
     return report
 
 
+def emit_files(*paths) -> None:
+    """Emit a structured trailer line for every file written.
+
+    The trailer is a deterministic landmark the agent can grep for instead of
+    hunting through prose for "Wrote /path" mentions. Format:
+
+      __SKILL_FILES__:["/abs/path/1","/abs/path/2"]
+
+    Always prints to stdout so the harness captures it. Scripts that write
+    files should call this AFTER any human-readable "Wrote /path" lines so
+    both formats are available downstream.
+    """
+    abs_paths = [str(Path(p).expanduser().resolve()) for p in paths]
+    print(f"__SKILL_FILES__:{json.dumps(abs_paths)}")
+
+
 def write_insight(insight: str, category: str = "general") -> None:
     """Append a significant finding to insights.md."""
     _ensure_state_dir()

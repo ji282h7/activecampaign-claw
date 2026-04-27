@@ -17,7 +17,7 @@ import json
 from collections import Counter
 from pathlib import Path
 
-from _ac_client import ACClient
+from _ac_client import ACClient, emit_files
 
 
 def fetch(client: ACClient) -> dict:
@@ -113,6 +113,7 @@ def main():
     if args.output:
         Path(args.output).write_text(out)
         print(f"Wrote {args.output}")
+        emit_files(args.output)
     else:
         print(out)
 

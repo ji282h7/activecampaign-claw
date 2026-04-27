@@ -1,7 +1,7 @@
 ---
 name: activecampaign-claw
 displayName: "AI Marketing + ActiveCampaign"
-version: 1.0.16
+version: 1.0.17
 license: MIT-0
 author: ji282h7
 summary: "ActiveCampaign agent for marketers + sales: 50+ reports for list, campaign, automation, and pipeline analysis."
@@ -121,6 +121,40 @@ metadata: {"openclaw":{"emoji":"📨","requires":{"bins":["python3"],"env":["AC_
 # AI Marketing + ActiveCampaign
 
 Direct integration with ActiveCampaign's v3 API, built to operate the way an experienced marketer and sales lead actually thinks.
+
+## ⚠ READ FIRST — Response format rules (apply to every reply)
+
+These three rules apply to every response. They are restated in detail later (rules 12–14 under "Critical operating rules") but failure modes have been observed often enough that they need to be the first thing you see.
+
+### R1. Pass through every file path the script wrote.
+
+When you run a script that writes files, the script prints two things to stdout you must never drop:
+
+1. Human-readable lines starting with `Wrote ` or `Saved to `.
+2. A structured trailer line: `__SKILL_FILES__:["/abs/path/1","/abs/path/2"]` — emitted by `_ac_client.emit_files()`. Parse this JSON array and include every path in your response.
+
+**Before sending any response that ran a script, scan the captured stdout for both `Wrote ` and `__SKILL_FILES__:`. Reproduce every path verbatim.** No exceptions, no paraphrasing, no "Files:" with an empty list.
+
+### R2. Never write a label without the content that fills it.
+
+Forbidden in any response (these are real trail-offs that have happened):
+
+- `Files:` *(no list following)*
+- `Output:` *(no path)*
+- `Current snapshot:` *(no path)*
+- `Latest pointer:` *(no path)*
+- `Saved to:` *(no path)*
+- `Backup record:` *(no path)*
+- `Results:` *(no body)*
+- `I saved the [thing] here:` *(sentence ends with the colon)*
+
+If your draft response has any of these patterns followed by a blank line or end-of-response, the response is broken — fill it in or delete the label. If a script wrote no files, say "No files written — output was printed inline above."
+
+### R3. Always prefer the named scripts in `scripts/` over inline Python.
+
+The skill ships 50+ scripts. Use them. Inline `python3 -c` or `python3 - <<EOF` heredocs are only acceptable when no existing script handles the case (rare). Reasons: scripts handle pagination, rate limits, retries, sanitization, history logging, AND emit the structured `__SKILL_FILES__:` trailer that R1 depends on. Ad-hoc Python skips all of that.
+
+---
 
 ## Use this skill when...
 
@@ -394,7 +428,11 @@ curl -s -X POST -H "Api-Token: $AC_API_TOKEN" \
 11. **Read insights.md for persistent context.** At session start and before generating recommendations, check `~/.activecampaign-skill/insights.md` for accumulated findings from previous analyses. These insights survive conversation compaction and provide longitudinal context.
 12. **Never write a label, header, or section title without immediately filling in its content.**
 
-    **Hard rule (file paths):** Every script that writes a file prints a line like `Wrote /absolute/path` to stdout. Pass every one of those lines through to the user verbatim. Do not paraphrase. Do not omit. Do not collapse into a label-only line ("Current snapshot:") and leave it empty. Scan the script's full stdout for the strings `Wrote `, `Saved to `, and `Output:` — every match represents a path that MUST appear in your response.
+    **Hard rule (file paths):** Every script that writes a file prints two things to stdout you must scan for and reproduce:
+    1. Human-readable `Wrote /absolute/path` lines (one per file).
+    2. A structured trailer: `__SKILL_FILES__:["/abs/path/1","/abs/path/2"]` — JSON array of every file the script wrote. Emitted by `_ac_client.emit_files()`. Parse it and include every path in your response.
+
+    Pass these through verbatim. Do not paraphrase. Do not omit. Do not collapse into a label-only line ("Current snapshot:") and leave it empty.
 
     **Hard rule (labels):** If your draft response contains any of these patterns followed by no content, the response is broken — go back and either fill them in or delete the label entirely:
     - `Files:` (no list)

@@ -79,6 +79,43 @@ class TestACClient:
         assert len(out) == 7
 
 
+class TestEmitFiles:
+    def test_prints_structured_trailer(self, tmp_path, capsys):
+        p = tmp_path / "report.json"
+        p.write_text("{}")
+        _ac_client.emit_files(p)
+        out = capsys.readouterr().out
+        assert "__SKILL_FILES__:" in out
+        # Path is resolved to absolute
+        assert str(p.resolve()) in out
+
+    def test_handles_multiple_paths(self, tmp_path, capsys):
+        a = tmp_path / "a.json"
+        b = tmp_path / "b.json"
+        a.write_text("{}")
+        b.write_text("{}")
+        _ac_client.emit_files(a, b)
+        out = capsys.readouterr().out
+        # Both paths in the JSON array
+        assert str(a.resolve()) in out
+        assert str(b.resolve()) in out
+        # Single trailer line — agent can grep for it
+        trailer_lines = [line for line in out.splitlines() if line.startswith("__SKILL_FILES__:")]
+        assert len(trailer_lines) == 1
+
+    def test_emits_valid_json(self, tmp_path, capsys):
+        import json as _json
+        p = tmp_path / "x.json"
+        p.write_text("{}")
+        _ac_client.emit_files(p)
+        out = capsys.readouterr().out
+        line = next(line for line in out.splitlines() if line.startswith("__SKILL_FILES__:"))
+        payload = line.split(":", 1)[1]
+        parsed = _json.loads(payload)
+        assert isinstance(parsed, list)
+        assert parsed[0] == str(p.resolve())
+
+
 class TestStateHelpers:
     def test_load_state_returns_none_when_missing(self, tmp_state_dir):
         with patch("_ac_client.STATE_FILE", tmp_state_dir / "state.json"):

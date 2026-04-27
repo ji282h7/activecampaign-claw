@@ -17,7 +17,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
-from _ac_client import ACClient, ACClientError
+from _ac_client import ACClient, ACClientError, emit_files
 
 
 def _try_paginate(client, path, key, **kwargs):
@@ -70,6 +70,7 @@ def main():
         Path(args.output).write_text(out)
         sz = Path(args.output).stat().st_size
         print(f"Wrote {args.output} ({sz:,} bytes)")
+        emit_files(args.output)
     else:
         print(out)
 

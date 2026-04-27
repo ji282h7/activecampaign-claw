@@ -16,7 +16,7 @@ import argparse
 import json
 from pathlib import Path
 
-from _ac_client import ACClient, ACClientError
+from _ac_client import ACClient, ACClientError, emit_files
 
 
 def fetch(client: ACClient, email: str) -> dict:
@@ -62,6 +62,7 @@ def main():
     if args.output:
         Path(args.output).write_text(out)
         print(f"Wrote {args.output}")
+        emit_files(args.output)
     else:
         print(out)
 

@@ -4,6 +4,16 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.17] — 2026-04-26
+
+### Added
+- `_ac_client.emit_files(*paths)` — prints a structured trailer line `__SKILL_FILES__:[...]` (JSON array of absolute paths) so the agent has a deterministic landmark to grep for instead of hunting through prose. 3 new tests cover trailer format, multi-path emission, and JSON validity.
+- New "READ FIRST — Response format rules" preamble at the top of SKILL.md (rules R1–R3). Restates the most-violated rules above the decision tree so they get attention earlier in the prompt. Lists every observed forbidden trailing-label variant explicitly: `Files:`, `Output:`, `Current snapshot:`, `Latest pointer:`, `Saved to:`, `Backup record:`, `Results:`, `I saved the [thing] here:`.
+
+### Changed
+- `snapshot.py`, `suppression_export.py`, `export_account.py`, `data_subject_export.py`, `audit_list_health.py`, `find_hot_leads.py` now call `emit_files()` after writing their output files. Existing `Wrote /path` lines are preserved for backwards-compat.
+- Rule #12 updated to reference the structured trailer alongside the human-readable `Wrote ` lines.
+
 ## [1.0.16] — 2026-04-26
 
 ### Changed

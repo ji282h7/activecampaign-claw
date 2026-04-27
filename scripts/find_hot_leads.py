@@ -25,6 +25,7 @@ from _ac_client import (
     ACClient,
     compare_to_previous,
     detect_patterns,
+    emit_files,
     ensure_state,
     load_history,
     log_outcome,
@@ -255,6 +256,7 @@ def main():
     if args.output:
         Path(args.output).write_text(output)
         print(f"✓ Report written to {args.output}", file=sys.stderr)
+        emit_files(args.output)
     else:
         print(output)
 
