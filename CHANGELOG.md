@@ -4,6 +4,12 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.18] — 2026-05-05
+
+### Changed
+- Removed the "READ FIRST — Response format rules" preamble from the top of SKILL.md. Its content (R1/R2/R3) was already restated by rules 12 and 13 under "Critical operating rules" further down. The preamble was dominating the clawhub.ai listing page; deleting the duplicate lets the listing lead with the human-facing intro.
+- Removed the coverage badge from README.md.
+
 ## [1.0.17] — 2026-04-26
 
 ### Added

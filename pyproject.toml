@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "activecampaign-claw"
-version = "1.0.17"
+version = "1.0.18"
 description = "ActiveCampaign agent for marketers + sales: 50+ reports for list, campaign, automation, and pipeline analysis."
 readme = "README.md"
 license = { file = "LICENSE" }
