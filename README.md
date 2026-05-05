@@ -6,7 +6,6 @@
 [![release](https://img.shields.io/badge/release-1.0.17-orange)](CHANGELOG.md)
 [![scripts](https://img.shields.io/badge/scripts-51-success)](#what-it-can-do)
 [![tests](https://img.shields.io/badge/tests-493%20passing-brightgreen)](tests/)
-[![coverage](https://img.shields.io/badge/coverage-66%25-yellow)](tests/)
 [![ActiveCampaign](https://img.shields.io/badge/ActiveCampaign-v3%20API-blue)](https://developers.activecampaign.com/reference)
 
 > Unlock ActiveCampaign's core capabilities — plus 50+ deeper diagnostics — through OpenClaw. Ask in plain English; get real reports on your live account data.
