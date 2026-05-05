@@ -47,6 +47,15 @@ ActiveCampaign already covers the core capabilities — sends, automations, lead
 - **MQL→SQL handoff** — who crossed the scoring threshold and got a deal vs. who didn't *(Deals)*
 - **Win/loss by source** — which lists/tags/forms produce winning pipeline *(Deals)*
 - **Pipeline audit** — per-stage health, value distribution, field completeness *(Deals)*
+- **Tasks audit** — overdue tasks, completion rate per user, unassigned work *(needs Plus+)*
+- **Sales rep performance** — per-rep scoreboard: deals open / won / lost, win rate, tasks open + overdue, notes activity score
+- **Notes analysis** — action-item extraction across all contact + deal notes, stale-note flag for deals not touched recently
+- **B2B accounts audit** — orphaned accounts, no-pipeline accounts, top accounts by deal/contact count, per-owner rollup *(needs Plus+)*
+- **Saved-responses audit** — inventory + near-duplicate detection across sales-rep reply templates *(needs Plus+)*
+
+### Marketing-content hygiene
+- **Template audit** — unused campaign templates, stale templates, average open rate per template
+- **Forms lead quality** — engagement / bounce / unsub rates per form, ranked by quality of leads each form produces
 
 ### Automation hygiene
 - **Audit** — orphaned automations (active but enrolling no one), completion rates

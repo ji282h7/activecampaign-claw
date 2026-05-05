@@ -1,7 +1,7 @@
 ---
 name: activecampaign-claw
 displayName: "AI Marketing + ActiveCampaign"
-version: 1.0.20
+version: 1.1.0
 license: MIT-0
 author: ji282h7
 summary: "ActiveCampaign agent for marketers + sales: 50+ reports for list, campaign, automation, and pipeline analysis."
@@ -135,6 +135,10 @@ Direct integration with ActiveCampaign's v3 API, built to operate the way an exp
 **Tag / field / list / segment hygiene** — tag audit (typos, dead tags, co-occurrence consolidation), custom-field audit, per-list audit, list-overlap matrix, segment audit, form audit.
 
 **Compliance & ops** — unsubscribe / opt-in audit, suppression export, GDPR Article 15 SAR export, webhook audit, account snapshot, schema diff between snapshots.
+
+**Sales / CRM** — overdue tasks audit, per-rep performance scoreboard (deals + tasks + notes), notes content analysis (action-item extraction, stale-note detection), saved-responses audit, B2B accounts audit (orphaned / no-pipeline / owner rollup). *(Plus+ for Tasks, Saved Responses, B2B Accounts.)*
+
+**Marketing-content hygiene** — campaign template audit (unused / stale / per-template open rate), per-form lead quality.
 
 **Strategic advice (no API calls)** — "should this be a tag, custom field, or list?", "why is my open rate dropping?", welcome / re-engagement / drip campaign **specs** you implement in the AC UI.
 
@@ -332,6 +336,18 @@ If `state.json` exists and is fresh, skip the welcome flow. Jump straight to ans
 | Unsubscribe / opt-in compliance | `scripts/unsubscribe_audit.py` |
 | Export suppressed contacts | `scripts/suppression_export.py` |
 | GDPR Article 15 SAR for one contact | `scripts/data_subject_export.py <email>` |
+
+#### Sales / CRM scripts
+
+| If the user wants to... | Run |
+|---|---|
+| Audit overdue tasks + per-user workload | `scripts/tasks_audit.py` *(needs Plus+)* |
+| Analyze contact + deal notes (action items, stale notes) | `scripts/notes_analysis.py [--stale-days N]` |
+| Per-rep performance scoreboard (deals + tasks + notes) | `scripts/sales_rep_performance.py` |
+| Audit campaign email templates (unused, stale, performance) | `scripts/template_audit.py [--stale-days N]` |
+| Audit saved-response library (sales reply templates) | `scripts/saved_responses_audit.py` *(needs Plus+)* |
+| B2B accounts audit (orphaned, no-pipeline, owner rollup) | `scripts/accounts_audit.py` *(needs Plus+)* |
+| Per-form lead quality (subscribelist proxy) | `scripts/forms_lead_quality.py [--window-days N]` |
 
 ### Layer 1: Recipes (workflow-level)
 

@@ -4,6 +4,22 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] — 2026-05-05
+
+### Added
+- `scripts/tasks_audit.py` — overdue tasks, completion rate per user, unassigned tasks. Uses `/dealTasks` with `filters[reltype]=Deal|Subscriber` (covers contact tasks too — there is no separate `/contactTasks` endpoint in v3). Exits cleanly on 403 for non-Plus accounts.
+- `scripts/notes_analysis.py` — content analysis across `/notes`: action-item extraction, per-user note count + median length, stale-note flag for deals, top recurring vocabulary.
+- `scripts/sales_rep_performance.py` — per-rep scoreboard combining `/users`, `/deals`, `/dealTasks`, `/notes`: open / won / lost deals, win rate, avg won value, open + overdue tasks, notes count, composite activity score. Falls back to notes-only view on Lite plans (no /deals).
+- `scripts/template_audit.py` — campaign template audit using `/templates` cross-referenced with `/campaigns`: unused, stale, per-template avg open rate, length-distribution outliers.
+- `scripts/saved_responses_audit.py` — sales-reply library audit using `/savedResponses` (Plus+): stale entries, length outliers, near-duplicate detection via jaccard on tokenized HTML-stripped bodies.
+- `scripts/accounts_audit.py` — B2B Accounts audit (Plus+) using `/accounts` (with `count_deals=true`) + `/accountContacts`: orphaned accounts, no-pipeline accounts, top accounts by deals/contacts, per-owner rollup. Exits cleanly on 403 if the Accounts feature isn't enabled.
+- `scripts/forms_lead_quality.py` — per-form lead quality reconstructed from each form's `subscribelist` membership + recent engagement events. Caveat documented inline: AC v3 has no `/formSubmissions` endpoint, so this is a list-quality reading rather than a strict per-submission reading when a list has multiple opt-in sources.
+- 36 new unit tests + 28 smoke tests across the 7 new scripts. Fixtures match the JSON shapes documented in the AC v3 reference for `/dealTasks`, `/notes`, `/users`, `/templates`, `/savedResponses`, `/accounts`, `/accountContacts`, and `/forms`.
+
+### Changed
+- README "What it can do" — added the Sales / CRM section and a Marketing-content hygiene section.
+- SKILL.md — added a "Sales / CRM scripts" decision-tree row group.
+
 ## [1.0.20] — 2026-05-05
 
 ### Changed
