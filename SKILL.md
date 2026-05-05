@@ -1,7 +1,7 @@
 ---
 name: activecampaign-claw
 displayName: "AI Marketing + ActiveCampaign"
-version: 1.0.19
+version: 1.0.20
 license: MIT-0
 author: ji282h7
 summary: "ActiveCampaign agent for marketers + sales: 50+ reports for list, campaign, automation, and pipeline analysis."
@@ -137,6 +137,25 @@ Direct integration with ActiveCampaign's v3 API, built to operate the way an exp
 **Compliance & ops** — unsubscribe / opt-in audit, suppression export, GDPR Article 15 SAR export, webhook audit, account snapshot, schema diff between snapshots.
 
 **Strategic advice (no API calls)** — "should this be a tag, custom field, or list?", "why is my open rate dropping?", welcome / re-engagement / drip campaign **specs** you implement in the AC UI.
+
+## Capabilities and safeguards
+
+Most of what this skill does is **read-only analysis** — pulling data and producing reports. A subset of operations are **write-capable**, declared explicitly here:
+
+- **Contact writes** — create / update / sync contacts, tag / untag, subscribe / unsubscribe from lists, enroll in automations, bulk import from CSV
+- **Deal writes** — create / update deals, move stages, add notes
+- **Custom-field writes** — set custom-field values on contacts and deals
+- **Tag merges** (`scripts/tag_merge.py`) — re-tag contacts and delete a source tag
+
+Every write is gated by the rules in "Critical operating rules" below — specifically rules 7–9:
+
+1. **Explicit confirmation before any POST / PUT / DELETE.** The agent shows the endpoint, JSON payload, and a plain-English summary. No write proceeds without an explicit "yes."
+2. **Deletes require their own confirmation step**, with a description of exactly what is lost and a statement that the action is permanent.
+3. **No more than 10 write operations batched** without pausing for confirmation again.
+4. **Destructive scripts (e.g. `tag_merge.py`) are dry-run by default**; `--confirm` is required to execute, and they refuse to delete anything still referenced by an active automation or segment.
+5. **All write operations go through the Python client** (`scripts/_ac_client.py`), which sanitizes API-sourced values before any subprocess call to prevent shell injection.
+
+Use a least-privileged AC integration user (see `INSTALL.md`) so the token's blast radius matches the operations you actually intend to run.
 
 ## Examples
 

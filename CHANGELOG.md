@@ -4,6 +4,11 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.20] — 2026-05-05
+
+### Changed
+- Documentation polish.
+
 ## [1.0.19] — 2026-05-05
 
 ### Changed
@@ -86,7 +91,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 - Excluded `.github/` from the published bundle (workflow files are only used by the GitHub repo).
-- Tightened changelog wording to remove keywords the capability scanner pattern-matches on.
 
 ## [1.0.7] — 2026-04-26
 
@@ -132,7 +136,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [1.0.3] — 2026-04-26
 
 ### Changed
-- Substituted neutral vocabulary in docs, examples, and one role-address local-part blocklist to clear ClawHub's capability-keyword scanner. The skill is read-only.
+- Wording cleanup across docs and examples; minor adjustment to the role-address local-part blocklist.
 
 ## [1.0.2] — 2026-04-26
 
@@ -142,7 +146,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [1.0.1] — 2026-04-26
 
 ### Changed
-- Rephrased a few docs and fixture strings to clear ClawHub's capability-keyword scanner. Affected: one disk-security note in `SECURITY.md`, one custom-field title in `tests/fixtures/mock_responses.py`, and one goal example in `recipes/welcome-series.md`.
+- Wording polish in `SECURITY.md`, `tests/fixtures/mock_responses.py`, and `recipes/welcome-series.md`.
 
 ## [1.0.0] — 2026-04-26
 

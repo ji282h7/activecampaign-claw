@@ -21,7 +21,7 @@ Keep this page open — you'll need both values in Step 3.
 
 > **Tip:** The URL on the Developer page is your **API URL** (`yourco.api-us1.com`), which is different from your login URL (`yourco.activehosted.com`). Use the API URL — calibration will fail with a 404 against the login URL.
 
-> **Use a dedicated integration user.** AC tokens are scoped to the user that created them. If that user is deleted or deactivated, every integration using their token breaks. Create a service-account user (`integration-bot@yourco.com`) with admin access, generate the token from **that** user's Developer page, and use it here.
+> **Use a dedicated, least-privileged integration user.** AC tokens are scoped to the user that created them. If that user is deleted or deactivated, every integration using their token breaks. Create a service-account user (`integration-bot@yourco.com`) and grant it only the permissions you actually need — typically Contacts and Deals access, plus whichever lists/automations the workflows you intend to use will touch. Admin is **not** required and not recommended. Generate the token from **that** user's Developer page and use it here.
 
 ## Step 2: Install the skill
 
