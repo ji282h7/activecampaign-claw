@@ -1,7 +1,7 @@
 ---
 name: activecampaign-claw
 displayName: "AI Marketing + ActiveCampaign"
-version: 1.0.18
+version: 1.0.19
 license: MIT-0
 author: ji282h7
 summary: "ActiveCampaign agent for marketers + sales: 50+ reports for list, campaign, automation, and pipeline analysis."
@@ -120,25 +120,33 @@ metadata: {"openclaw":{"emoji":"📨","requires":{"bins":["python3"],"env":["AC_
 
 # AI Marketing + ActiveCampaign
 
-Direct integration with ActiveCampaign's v3 API, built to operate the way an experienced marketer and sales lead actually thinks.
+Direct integration with ActiveCampaign's v3 API, built to operate the way an experienced marketer and sales lead actually thinks. Calibration scans your account once at install (taxonomy + 90-day campaign baselines); 50+ scripts then answer questions against your live data in plain English.
 
-## Use this skill when...
+## What it does
 
-- The user mentions ActiveCampaign, AC, or their AC account
-- The user asks about contacts, deals, tags, lists, pipelines, automations, or custom fields in a CRM context
-- The user wants to audit list health, find hot leads, surface slipping deals, or run a daily digest
-- The user asks about email campaign design, welcome series, re-engagement flows, or send-time optimization
-- The user mentions any of the scripts in `scripts/` (e.g. `calibrate.py`, `audit_list_health.py`, `find_hot_leads.py`, `find_slipping_deals.py`, `tag_audit.py`, `campaign_postmortem.py`, `automation_funnel.py`, `dedupe_contacts.py`, `export_account.py`, …) or `state.json`
-- The user asks about email deliverability, open rates, bounce rates, or unsubscribe trends tied to their account
-- The user wants to sync, tag, or enroll contacts in automations
-- The user asks about segmentation strategy, lead scoring, or deal pipeline management
+**Performance analysis** — campaign postmortems, subject-line analysis, send-time optimization, send-frequency / fatigue, domain breakdown (Gmail vs. Outlook vs. corporate), engagement decay, from-name performance, monthly trend, baseline-drift detection.
 
-## Do NOT use this skill when...
+**List & contact health** — list audits, duplicate finder, role-address detector, field completeness, stale contacts, new-subscriber quality, list-growth forecast, pre-import CSV validator.
 
-- The user is asking about a different CRM or email platform (HubSpot, Mailchimp, Salesforce, etc.)
-- The question is about generic email marketing theory with no connection to ActiveCampaign
-- The user needs to send a campaign or create an automation (the AC v3 API cannot do these — explain the limitation)
-- The user is asking about ActiveCampaign account plan, user management, or admin settings (not covered by this skill)
+**Lead scoring & sales** — hot leads ranked by composite signals, slipping deals, MQL→SQL handoff, win/loss by source, pipeline audit. *(Deals-dependent reports require an AC plan that includes Deals; they exit cleanly otherwise.)*
+
+**Automation hygiene** — orphaned-automation audit, per-step funnel dropoff, multi-automation overlap, stalled enrollments, dependency map, broken-reference detector.
+
+**Tag / field / list / segment hygiene** — tag audit (typos, dead tags, co-occurrence consolidation), custom-field audit, per-list audit, list-overlap matrix, segment audit, form audit.
+
+**Compliance & ops** — unsubscribe / opt-in audit, suppression export, GDPR Article 15 SAR export, webhook audit, account snapshot, schema diff between snapshots.
+
+**Strategic advice (no API calls)** — "should this be a tag, custom field, or list?", "why is my open rate dropping?", welcome / re-engagement / drip campaign **specs** you implement in the AC UI.
+
+## Examples
+
+**"Find my hottest leads"** — ranks contacts by a composite of AC lead score, recent engagement velocity, deal-stage progression, and content depth. Output includes a "top signal" column explaining *why* each lead is hot, so you walk into the call already knowing what they care about.
+
+**"Merge my duplicate tags"** — catches behavioral duplicates that string-similarity tools miss. Surfaces case-mismatch (`customer` + `Customer`), separator typos (`webinar-attendee` + `webinar_attendee`), and semantic duplicates (`vip` + `high-value-customer`) by co-occurrence on the same contacts. Then resolves them in-conversation: applies the survivor tag, removes the dupe, patches automation references, and deletes the dead tag — with explicit confirmation before each destructive step.
+
+**"Run my morning briefing"** — pulls a daily digest off your account: yesterday's campaign metrics vs. baseline, hot-lead changes since last check, slipping deals that crossed the staleness threshold overnight, automations with new stalled enrollments, and any baseline-drift alerts.
+
+For more examples (subject-line lift analysis, list health audits, stalled-automation detection, re-engagement campaigns), see the workflow recipes in `recipes/`.
 
 ## What makes this skill different
 
@@ -378,6 +386,26 @@ curl -s -X POST -H "Api-Token: $AC_API_TOKEN" \
   -d '{"contactAutomation":{"contact":"123","automation":"7"}}' \
   "$AC_API_URL/api/3/contactAutomations" | jq
 ```
+
+## When to invoke this skill (routing rules for the agent)
+
+**Use this skill when:**
+
+- The user mentions ActiveCampaign, AC, or their AC account
+- The user asks about contacts, deals, tags, lists, pipelines, automations, or custom fields in a CRM context
+- The user wants to audit list health, find hot leads, surface slipping deals, or run a daily digest
+- The user asks about email campaign design, welcome series, re-engagement flows, or send-time optimization
+- The user mentions any of the scripts in `scripts/` (e.g. `calibrate.py`, `audit_list_health.py`, `find_hot_leads.py`, `find_slipping_deals.py`, `tag_audit.py`, `campaign_postmortem.py`, `automation_funnel.py`, `dedupe_contacts.py`, `export_account.py`, …) or `state.json`
+- The user asks about email deliverability, open rates, bounce rates, or unsubscribe trends tied to their account
+- The user wants to sync, tag, or enroll contacts in automations
+- The user asks about segmentation strategy, lead scoring, or deal pipeline management
+
+**Do NOT use this skill when:**
+
+- The user is asking about a different CRM or email platform (HubSpot, Mailchimp, Salesforce, etc.)
+- The question is about generic email marketing theory with no connection to ActiveCampaign
+- The user needs to send a campaign or create an automation (the AC v3 API cannot do these — explain the limitation)
+- The user is asking about ActiveCampaign account plan, user management, or admin settings (not covered by this skill)
 
 ## Critical operating rules
 

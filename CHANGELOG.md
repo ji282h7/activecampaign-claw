@@ -4,6 +4,11 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.19] — 2026-05-05
+
+### Changed
+- Restructured top of SKILL.md so the marketplace listing leads with user-facing content: tagline → "What it does" (capabilities by category) → "Examples" → "What makes this skill different" → "Setup". The agent-routing sections ("Use this skill when..." / "Do NOT use this skill when...") moved down into a single "When to invoke this skill" section right before "Critical operating rules", where they belong as agent spec.
+
 ## [1.0.18] — 2026-05-05
 
 ### Changed
