@@ -235,3 +235,7 @@ Issues and PRs welcome at https://github.com/ji282h7/activecampaign-claw
 ## Credits
 
 Built on top of [OpenClaw](https://openclaw.ai) skill framework. ActiveCampaign v3 API documentation: https://developers.activecampaign.com/reference
+
+## Download History
+
+[![Download History](https://skill-history.com/chart/ji282h7/activecampaign-claw.svg)](https://skill-history.com/ji282h7/activecampaign-claw)
