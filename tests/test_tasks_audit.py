@@ -118,8 +118,11 @@ def test_completion_age_median():
 
 def test_unavailable_renders_friendly_message():
     md = tasks_audit.render_markdown({"unavailable": True, "reason": "tasks_feature_not_enabled"})
-    assert "Tasks feature not enabled" in md
-    assert "403" in md
+    assert "Not available on your ActiveCampaign plan" in md
+    assert "Tasks (CRM)" in md
+    assert "Plus" in md
+    # Avoid the word "ERROR" — it should read as a plan limitation, not a bug
+    assert "ERROR" not in md
 
 
 def test_render_includes_user_table():

@@ -19,7 +19,7 @@ import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from _ac_client import ACClient, ACClientError
+from _ac_client import ACClient, ACClientError, render_feature_unavailable
 
 
 def _parse_iso(s):
@@ -55,12 +55,14 @@ def fetch(client: ACClient) -> dict:
         deals = client.paginate("deals", "deals", max_items=20000)
     except ACClientError as e:
         if e.status_code == 403:
-            raise SystemExit("ERROR: Deals feature is not enabled on this account.") from e
+            return {"unavailable": True}
         raise
     return {"contacts": contacts, "scores": scores, "deals": deals}
 
 
 def analyze(data: dict, threshold: float, days: int) -> dict:
+    if data.get("unavailable"):
+        return {"unavailable": True}
     cutoff = datetime.now(timezone.utc) - timedelta(days=days)
     crossed = {}  # contact_id -> max_score in window
     for s in data["scores"]:
@@ -104,6 +106,11 @@ def analyze(data: dict, threshold: float, days: int) -> dict:
 
 
 def render_markdown(r: dict) -> str:
+    if r.get("unavailable"):
+        return render_feature_unavailable(
+            "Deals (CRM)", "Plus",
+            "MQL→SQL handoff diagnostics need the /deals endpoint.",
+        )
     lines = [
         f"# MQL→SQL Handoff (last {r['window_days']} days, score ≥ {r['threshold']})",
         "",

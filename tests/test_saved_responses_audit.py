@@ -17,7 +17,9 @@ def _now():
 def test_unavailable_path():
     r = sra.analyze({"unavailable": True}, now=_now())
     md = sra.render_markdown(r)
-    assert "Saved Responses not available" in md
+    assert "Not available on your ActiveCampaign plan" in md
+    assert "Saved Responses" in md
+    assert "ERROR" not in md
 
 
 def test_stale_short_long_buckets():

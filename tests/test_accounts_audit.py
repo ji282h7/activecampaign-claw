@@ -25,7 +25,9 @@ def test_unavailable_path():
         now=_now(),
     )
     md = accounts_audit.render_markdown(r)
-    assert "B2B Accounts not available" in md
+    assert "Not available on your ActiveCampaign plan" in md
+    assert "B2B Accounts" in md
+    assert "ERROR" not in md
 
 
 def test_orphaned_and_no_pipeline_buckets():

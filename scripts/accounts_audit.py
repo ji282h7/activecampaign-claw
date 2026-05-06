@@ -27,7 +27,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from _ac_client import ACClient, ACClientError, emit_files
+from _ac_client import ACClient, ACClientError, emit_files, render_feature_unavailable
 
 
 def _parse_date(value: str | None) -> datetime | None:
@@ -145,10 +145,9 @@ def analyze(data: dict, stale_days: int = 90, now: datetime | None = None) -> di
 
 def render_markdown(r: dict) -> str:
     if r.get("unavailable"):
-        return (
-            "# Accounts Audit\n\n"
-            "**B2B Accounts not available on this AC plan (403).**\n\n"
-            "The `/accounts` endpoint requires Plus or higher. Skipping audit.\n"
+        return render_feature_unavailable(
+            "B2B Accounts", "Plus",
+            "B2B accounts audit needs the /accounts endpoint.",
         )
     lines = [
         "# Accounts Audit",

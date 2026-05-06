@@ -28,7 +28,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-from _ac_client import ACClient, ACClientError, emit_files
+from _ac_client import ACClient, ACClientError, emit_files, render_feature_unavailable
 
 _HTML_TAG = re.compile(r"<[^>]+>")
 _WORD = re.compile(r"[a-zA-Z][a-zA-Z'-]{2,}")
@@ -131,10 +131,9 @@ def analyze(data: dict, stale_days: int = 365, duplicate_threshold: float = 0.85
 
 def render_markdown(r: dict) -> str:
     if r.get("unavailable"):
-        return (
-            "# Saved Responses Audit\n\n"
-            "**Saved Responses not available on this AC plan (403).**\n\n"
-            "The `/savedResponses` endpoint requires CRM/Sales (Plus+).\n"
+        return render_feature_unavailable(
+            "Saved Responses (CRM)", "Plus",
+            "Saved-responses audit needs the /savedResponses endpoint.",
         )
     lines = [
         "# Saved Responses Audit",

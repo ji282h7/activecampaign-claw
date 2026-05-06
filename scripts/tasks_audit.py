@@ -24,7 +24,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from _ac_client import ACClient, ACClientError, emit_files
+from _ac_client import ACClient, ACClientError, emit_files, render_feature_unavailable
 
 
 def _parse_date(value: str | None) -> datetime | None:
@@ -162,11 +162,9 @@ def analyze(data: dict, now: datetime | None = None) -> dict:
 
 def render_markdown(r: dict) -> str:
     if r.get("unavailable"):
-        return (
-            "# Tasks Audit\n\n"
-            "**Tasks feature not enabled on this AC plan.**\n\n"
-            "The `/dealTasks` endpoint requires CRM/Sales (Plus+). "
-            "The endpoint returned 403 — no audit was performed.\n"
+        return render_feature_unavailable(
+            "Tasks (CRM)", "Plus",
+            "Tasks audit needs the /dealTasks endpoint.",
         )
 
     lines = [

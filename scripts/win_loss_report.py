@@ -20,7 +20,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from statistics import mean
 
-from _ac_client import ACClient, ACClientError
+from _ac_client import ACClient, ACClientError, render_feature_unavailable
 
 
 def _parse_iso(s):
@@ -48,7 +48,7 @@ def fetch(client: ACClient, days: int) -> dict:
         deals = client.paginate("deals", "deals", max_items=20000)
     except ACClientError as e:
         if e.status_code == 403:
-            raise SystemExit("ERROR: Deals feature is not enabled on this account.") from e
+            return {"unavailable": True}
         raise
     closed = []
     for d in deals:
@@ -63,6 +63,8 @@ def fetch(client: ACClient, days: int) -> dict:
 
 
 def analyze(data: dict) -> dict:
+    if data.get("unavailable"):
+        return {"unavailable": True}
     contact_to_lists = defaultdict(list)
     for cl in data["contact_lists"]:
         if str(cl.get("status")) == "1":
@@ -119,6 +121,11 @@ def analyze(data: dict) -> dict:
 
 
 def render_markdown(r: dict) -> str:
+    if r.get("unavailable"):
+        return render_feature_unavailable(
+            "Deals (CRM)", "Plus",
+            "Win/loss reporting needs the /deals endpoint.",
+        )
     lines = [
         "# Win/Loss Report",
         "",

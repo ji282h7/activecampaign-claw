@@ -30,7 +30,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from _ac_client import ACClient, ACClientError, emit_files
+from _ac_client import ACClient, ACClientError, emit_files, render_feature_unavailable
 
 ACTION_PATTERNS = (
     r"\bfollow ?up\b",
@@ -220,7 +220,10 @@ def main():
         data = fetch_data(client)
     except ACClientError as e:
         if e.status_code == 403:
-            print("# Notes Analysis\n\nNotes feature not available on this plan (403).\n")
+            print(render_feature_unavailable(
+                "Notes (CRM)", "Plus",
+                "Notes analysis needs the /notes endpoint.",
+            ))
             return
         raise
     report = analyze(data, stale_days=args.stale_days)

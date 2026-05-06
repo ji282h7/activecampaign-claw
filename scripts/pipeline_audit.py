@@ -21,7 +21,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from _ac_client import ACClient, ACClientError
+from _ac_client import ACClient, ACClientError, render_feature_unavailable
 
 
 def fetch(client: ACClient) -> dict:
@@ -33,7 +33,7 @@ def fetch(client: ACClient) -> dict:
         deal_field_data = client.paginate("dealCustomFieldData", "dealCustomFieldData", max_items=50000)
     except ACClientError as e:
         if e.status_code == 403:
-            raise SystemExit("ERROR: Deals feature is not enabled on this account. pipeline_audit requires Deals.") from e
+            return {"unavailable": True}
         raise
     return {
         "pipelines": pipelines,
@@ -57,6 +57,8 @@ def _days_ago(iso_str):
 
 
 def analyze(data: dict) -> dict:
+    if data.get("unavailable"):
+        return {"unavailable": True}
     deals_by_pipeline = defaultdict(list)
     deals_by_stage = defaultdict(list)
     for d in data["deals"]:
@@ -114,6 +116,11 @@ def analyze(data: dict) -> dict:
 
 
 def render_markdown(r: dict) -> str:
+    if r.get("unavailable"):
+        return render_feature_unavailable(
+            "Deals (CRM)", "Plus",
+            "Pipeline audit needs /deals, /dealStages, /dealGroups.",
+        )
     lines = [
         "# Pipeline Audit",
         "",
