@@ -1,7 +1,7 @@
 ---
 name: activecampaign-claw
 displayName: "AI Marketing + ActiveCampaign"
-version: 1.1.1
+version: 1.1.2
 license: MIT-0
 author: ji282h7
 summary: "ActiveCampaign agent for marketers + sales: 50+ reports for list, campaign, automation, and pipeline analysis."
@@ -38,7 +38,7 @@ allowed-tools:
   - Bash
   - Read
 when_to_use:
-  # original triggers
+  # daily / strategic
   - "give me my morning briefing or daily digest from ActiveCampaign"
   - "design a welcome series, onboarding sequence, or drip campaign (spec only — user builds in AC)"
   - "clean up my pipeline, do deal hygiene, or find stale deals"
@@ -46,18 +46,18 @@ when_to_use:
   - "find my hottest leads or rank contacts by lead score"
   - "which deals are slipping, overdue, or need attention"
   - "calibrate my ActiveCampaign account or refresh state"
-  - "create, update, sync, or search for a contact in ActiveCampaign"
-  - "tag or untag a contact in ActiveCampaign"
-  - "subscribe or unsubscribe a contact from a list"
-  - "enroll a contact in an automation"
+  # contact + deal lookups (read)
+  - "look up a contact in ActiveCampaign or check their profile"
+  - "review the tags applied to a contact"
+  - "see what lists a contact is on"
+  - "see what automations a contact has been enrolled in"
   - "check bounce logs or contact scores"
-  - "bulk import contacts into ActiveCampaign"
-  - "read or write custom field values on a contact or deal"
-  - "create, update, or move a deal to a different stage"
-  - "add a note to a deal in ActiveCampaign"
+  - "look up custom field values on a contact or deal"
+  - "review or analyze a deal in the pipeline"
   - "filter deals by pipeline, stage, owner, or status"
   - "what's my pipeline value, deal count, or stage distribution"
   - "list my pipelines, stages, automations, tags, or custom fields"
+  # marketing strategy
   - "who should I send this email to or how should I segment my list"
   - "help me write a subject line or improve email open rates"
   - "why is my open rate, click rate, or deliverability dropping"
@@ -65,7 +65,7 @@ when_to_use:
   - "should this be a tag, custom field, or list in ActiveCampaign"
   - "design engagement tiers, RFM scoring, or lifecycle segments"
   - "re-engagement campaign for dormant or inactive contacts"
-  - "suppress bounced contacts or handle unsubscribes"
+  - "review bounce handling and suppression status"
   - "email copy advice, CTA design, or campaign content review"
   # Performance analysis
   - "campaign postmortem / breakdown / report on my last send"
@@ -142,24 +142,20 @@ Direct integration with ActiveCampaign's v3 API, built to operate the way an exp
 
 **Strategic advice (no API calls)** — "should this be a tag, custom field, or list?", "why is my open rate dropping?", welcome / re-engagement / drip campaign **specs** you implement in the AC UI.
 
-## Capabilities and safeguards
+## Operating model
 
-Most of what this skill does is **read-only analysis** — pulling data and producing reports. A subset of operations are **write-capable**, declared explicitly here:
+The skill is **analysis-first**. Calibration and the 50+ scripts in `scripts/` read your AC account and produce reports — they don't change your data.
 
-- **Contact writes** — create / update / sync contacts, tag / untag, subscribe / unsubscribe from lists, enroll in automations, bulk import from CSV
-- **Deal writes** — create / update deals, move stages, add notes
-- **Custom-field writes** — set custom-field values on contacts and deals
-- **Tag merges** (`scripts/tag_merge.py`) — re-tag contacts and delete a source tag
+A small number of operations can modify records in your account when you explicitly ask for them. Every one of those is gated by the safeguards in "Critical operating rules" below — specifically:
 
-Every write is gated by the rules in "Critical operating rules" below — specifically rules 7–9:
+1. **Use a least-privileged AC integration user** (see `INSTALL.md`). Admin is not required and not recommended; the token's blast radius should match what you intend to run.
+2. **Explicit confirmation before any POST / PUT / DELETE.** The agent shows the endpoint, the JSON payload, and a plain-English summary. Nothing proceeds without your explicit "yes."
+3. **Deletes require their own confirmation step**, with a description of what is lost and a statement that the action is permanent.
+4. **No more than 10 modification operations batched** without pausing for confirmation again.
+5. **Destructive helpers (e.g. `tag_merge.py`) are dry-run by default**; `--confirm` is required to execute, and they refuse to operate on anything still referenced by an active automation or segment.
+6. **All modification calls go through the Python client** (`scripts/_ac_client.py`), which sanitizes API-sourced values before any subprocess call to prevent shell injection.
 
-1. **Explicit confirmation before any POST / PUT / DELETE.** The agent shows the endpoint, JSON payload, and a plain-English summary. No write proceeds without an explicit "yes."
-2. **Deletes require their own confirmation step**, with a description of exactly what is lost and a statement that the action is permanent.
-3. **No more than 10 write operations batched** without pausing for confirmation again.
-4. **Destructive scripts (e.g. `tag_merge.py`) are dry-run by default**; `--confirm` is required to execute, and they refuse to delete anything still referenced by an active automation or segment.
-5. **All write operations go through the Python client** (`scripts/_ac_client.py`), which sanitizes API-sourced values before any subprocess call to prevent shell injection.
-
-Use a least-privileged AC integration user (see `INSTALL.md`) so the token's blast radius matches the operations you actually intend to run.
+When asked, the skill can act on contacts, deals, custom-field values, and tags — but only behind those gates, scoped to the records you specify, and previewed first.
 
 ## Examples
 
@@ -432,7 +428,7 @@ curl -s -X POST -H "Api-Token: $AC_API_TOKEN" \
 - The user asks about email campaign design, welcome series, re-engagement flows, or send-time optimization
 - The user mentions any of the scripts in `scripts/` (e.g. `calibrate.py`, `audit_list_health.py`, `find_hot_leads.py`, `find_slipping_deals.py`, `tag_audit.py`, `campaign_postmortem.py`, `automation_funnel.py`, `dedupe_contacts.py`, `export_account.py`, …) or `state.json`
 - The user asks about email deliverability, open rates, bounce rates, or unsubscribe trends tied to their account
-- The user wants to sync, tag, or enroll contacts in automations
+- The user asks about contact-status questions (which list / tag / automation a contact is on)
 - The user asks about segmentation strategy, lead scoring, or deal pipeline management
 
 **Do NOT use this skill when:**
