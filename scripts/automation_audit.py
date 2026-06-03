@@ -33,9 +33,9 @@ def _parse_iso(s):
         return None
 
 
-def fetch(client: ACClient) -> dict:
+def fetch(client: ACClient, max_items: int = 50000) -> dict:
     automations = client.paginate("automations", "automations", max_items=2000)
-    contact_automations = client.paginate("contactAutomations", "contactAutomations", max_items=50000)
+    contact_automations = client.paginate("contactAutomations", "contactAutomations", max_items=max_items)
     return {"automations": automations, "contact_automations": contact_automations}
 
 
@@ -109,12 +109,14 @@ def render_markdown(r: dict) -> str:
 def main():
     parser = argparse.ArgumentParser(description="Audit automations")
     parser.add_argument("--window-days", type=int, default=30)
+    parser.add_argument("--max-items", type=int, default=50000,
+                        help="Cap /contactAutomations stream (default 50000)")
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     parser.add_argument("--output", default=None)
     args = parser.parse_args()
 
     client = ACClient()
-    data = fetch(client)
+    data = fetch(client, max_items=args.max_items)
     r = analyze(data, args.window_days)
     out = json.dumps(r, indent=2) if args.format == "json" else render_markdown(r)
     if args.output:

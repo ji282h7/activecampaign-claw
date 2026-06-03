@@ -48,12 +48,12 @@ def fetch(client: ACClient, scope: str) -> dict:
     }
     if scope in ("contacts", "all"):
         out["contacts"] = _try_paginate(client, "contacts", "contacts", max_items=50000)
-        out["fieldValues"] = _try_paginate(client, "fieldValues", "fieldValues", max_items=200000)
-        out["contactTags"] = _try_paginate(client, "contactTags", "contactTags", max_items=200000)
-        out["contactLists"] = _try_paginate(client, "contactLists", "contactLists", max_items=200000)
+        out["fieldValues"] = _try_paginate(client, "fieldValues", "fieldValues", max_items=50000)
+        out["contactTags"] = _try_paginate(client, "contactTags", "contactTags", max_items=50000)
+        out["contactLists"] = _try_paginate(client, "contactLists", "contactLists", max_items=50000)
     if scope in ("deals", "all"):
         out["deals"] = _try_paginate(client, "deals", "deals", max_items=50000)
-        out["dealCustomFieldData"] = _try_paginate(client, "dealCustomFieldData", "dealCustomFieldData", max_items=200000)
+        out["dealCustomFieldData"] = _try_paginate(client, "dealCustomFieldData", "dealCustomFieldData", max_items=50000)
     return out
 
 

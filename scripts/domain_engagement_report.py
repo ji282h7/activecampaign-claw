@@ -20,9 +20,9 @@ from pathlib import Path
 from _ac_client import ACClient
 
 
-def fetch(client: ACClient, max_events: int) -> dict:
+def fetch(client: ACClient, max_events: int, max_items: int = 20000) -> dict:
     activities = client.fetch_engagement_events(max_items=max_events)
-    contacts = client.paginate("contacts", "contacts", max_items=20000)
+    contacts = client.paginate("contacts", "contacts", max_items=max_items)
     bounces = client.paginate("bounceLogs", "bounceLogs", max_items=20000)
     return {"activities": activities, "contacts": contacts, "bounces": bounces}
 
@@ -93,12 +93,14 @@ def main():
     parser = argparse.ArgumentParser(description="Engagement by recipient domain")
     parser.add_argument("--top", type=int, default=25)
     parser.add_argument("--max-events", type=int, default=20000)
+    parser.add_argument("--max-items", type=int, default=20000,
+                        help="Cap /contacts stream (default 20000)")
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     parser.add_argument("--output", default=None)
     args = parser.parse_args()
 
     client = ACClient()
-    data = fetch(client, args.max_events)
+    data = fetch(client, args.max_events, max_items=args.max_items)
     r = analyze(data, args.top)
     out = json.dumps(r, indent=2) if args.format == "json" else render_markdown(r)
     if args.output:

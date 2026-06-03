@@ -44,3 +44,27 @@ def test_render_includes_sections():
     r = tag_audit.analyze(data, 5, 0.5)
     md = tag_audit.render_markdown(r)
     assert "Tag Audit" in md
+
+
+def test_analyze_accepts_preaggregated_shape():
+    """The streaming fetch_data now returns tag_count + contact_tag_pairs
+    instead of the raw contact_tags list. analyze() must accept both."""
+    from collections import Counter, defaultdict
+    data = {
+        "tags": [
+            {"id": "1", "tag": "popular"},
+            {"id": "2", "tag": "rare-typo"},
+        ],
+        # Pre-aggregated by fetch_data while streaming
+        "tag_count": Counter({"1": 50, "2": 1}),
+        "contact_tag_pairs": defaultdict(set, {
+            **{str(i): {"1"} for i in range(50)},
+            "0": {"1", "2"},
+        }),
+        "automations": [{"name": "Welcome", "actions": "uses popular"}],
+        "segments": [],
+    }
+    r = tag_audit.analyze(data, rare_threshold=5, common_threshold=0.5)
+    rare_names = {t["name"] for t in r["rare"]}
+    assert "rare-typo" in rare_names
+    assert r["total_tagged_contacts"] == 50

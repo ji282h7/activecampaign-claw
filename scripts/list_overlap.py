@@ -21,9 +21,9 @@ from pathlib import Path
 from _ac_client import ACClient
 
 
-def fetch(client: ACClient) -> dict:
+def fetch(client: ACClient, max_items: int = 50000) -> dict:
     lists = client.paginate("lists", "lists", max_items=2000)
-    contact_lists = client.paginate("contactLists", "contactLists", max_items=200000)
+    contact_lists = client.paginate("contactLists", "contactLists", max_items=max_items)
     return {"lists": lists, "contact_lists": contact_lists}
 
 
@@ -91,12 +91,14 @@ def render_markdown(r: dict) -> str:
 def main():
     parser = argparse.ArgumentParser(description="Compute list overlap")
     parser.add_argument("--min-overlap", type=int, default=1)
+    parser.add_argument("--max-items", type=int, default=50000,
+                        help="Cap /contactLists stream (default 50000)")
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     parser.add_argument("--output", default=None)
     args = parser.parse_args()
 
     client = ACClient()
-    data = fetch(client)
+    data = fetch(client, max_items=args.max_items)
     r = analyze(data, args.min_overlap)
     out = json.dumps(r, indent=2) if args.format == "json" else render_markdown(r)
     if args.output:

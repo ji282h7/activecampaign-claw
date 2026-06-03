@@ -4,6 +4,16 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] — 2026-06-03
+
+### Changed
+- `tag_audit.py` — `fetch_data()` now streams `/contactTags` and pre-aggregates into a `Counter` + per-contact tag sets, instead of materializing the full 50k-row list. Memory bound is now ~1–2 orders of magnitude smaller on accounts with many contact-tag pairs. `analyze()` accepts either the new pre-aggregated shape or the legacy raw list for backward compatibility with existing tests and callers.
+- Lowered aggressive `max_items` defaults: `list_overlap.py` 200000 → 50000, `list_audit.py` 100000 → 50000, `win_loss_report.py` 100000 → 50000, `export_account.py` 200000 → 50000 (on the four highest-volume sub-resources).
+- Added `--max-items` CLI flag to 10 scripts that previously had only a hardcoded default: `automation_audit`, `automation_overlap`, `stalled_automations`, `bounce_breakdown`, `list_audit`, `list_overlap`, `list_growth_forecast`, `domain_engagement_report`, `send_frequency_report`, `notes_analysis`. Plus `tag_audit` gained the same flag wired into its streaming fetch.
+
+### Added
+- Test asserting `tag_audit.analyze()` works on the new pre-aggregated shape (alongside the existing list-shape tests).
+
 ## [1.4.0] — 2026-06-03
 
 ### Added

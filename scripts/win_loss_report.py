@@ -52,7 +52,7 @@ def fetch(client: ACClient, days: int) -> dict:
         edate = _parse_iso(d.get("edate") or d.get("mdate"))
         if edate and edate >= cutoff:
             closed.append(d)
-    contact_lists = client.paginate("contactLists", "contactLists", max_items=100000)
+    contact_lists = client.paginate("contactLists", "contactLists", max_items=50000)
     return {"deals": closed, "contact_lists": contact_lists, "cutoff": cutoff}
 
 

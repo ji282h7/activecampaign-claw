@@ -22,14 +22,30 @@ from pathlib import Path
 from _ac_client import ACClient
 
 
-def fetch_data(client: ACClient) -> dict:
+def fetch_data(client: ACClient, max_contact_tags: int = 50000) -> dict:
+    """Pull taxonomy + stream-aggregate the contact-tag link table.
+
+    Streaming the contact-tag pairs (rather than materializing the full list)
+    keeps memory bounded to the pre-aggregated structures, which are typically
+    1–2 orders of magnitude smaller than the raw record stream on big accounts.
+    """
     tags = client.paginate("tags", "tags", max_items=5000)
-    contact_tags = client.paginate("contactTags", "contactTags", max_items=50000)
+
+    tag_count: Counter = Counter()
+    contact_tag_pairs: dict[str, set[str]] = defaultdict(set)
+    for x in client.stream("contactTags", "contactTags", max_items=max_contact_tags):
+        tag_id = str(x.get("tag"))
+        contact_id = str(x.get("contact"))
+        if tag_id and contact_id:
+            tag_count[tag_id] += 1
+            contact_tag_pairs[contact_id].add(tag_id)
+
     automations = client.paginate("automations", "automations", max_items=2000)
     segments = client.paginate("segments", "segments", max_items=2000)
     return {
         "tags": tags,
-        "contact_tags": contact_tags,
+        "tag_count": tag_count,
+        "contact_tag_pairs": contact_tag_pairs,
         "automations": automations,
         "segments": segments,
     }
@@ -43,18 +59,23 @@ def _scan_text_for_tag_refs(text: str, tag_id: str, tag_name: str) -> bool:
 
 def analyze(data: dict, rare_threshold: int, common_threshold: float) -> dict:
     tags = data["tags"]
-    ct = data["contact_tags"]
-
     tag_by_id = {t["id"]: t for t in tags}
-    tag_count = Counter()
-    contact_tag_pairs = defaultdict(set)  # contact_id -> set of tag_ids
 
-    for x in ct:
-        tag_id = str(x.get("tag"))
-        contact_id = str(x.get("contact"))
-        if tag_id and contact_id:
-            tag_count[tag_id] += 1
-            contact_tag_pairs[contact_id].add(tag_id)
+    # Accept either the new pre-aggregated shape (from streaming fetch_data)
+    # or the legacy raw `contact_tags` list (kept for backward compat with
+    # existing test fixtures and any external callers).
+    if "tag_count" in data and "contact_tag_pairs" in data:
+        tag_count = data["tag_count"]
+        contact_tag_pairs = data["contact_tag_pairs"]
+    else:
+        tag_count = Counter()
+        contact_tag_pairs = defaultdict(set)
+        for x in data.get("contact_tags", []):
+            tag_id = str(x.get("tag"))
+            contact_id = str(x.get("contact"))
+            if tag_id and contact_id:
+                tag_count[tag_id] += 1
+                contact_tag_pairs[contact_id].add(tag_id)
 
     total_contacts_tagged = len(contact_tag_pairs)
 
@@ -151,12 +172,14 @@ def main():
     parser = argparse.ArgumentParser(description="Audit tag hygiene")
     parser.add_argument("--rare-threshold", type=int, default=5)
     parser.add_argument("--common-threshold", type=float, default=0.5)
+    parser.add_argument("--max-items", type=int, default=50000,
+                        help="Cap the /contactTags stream (default 50000)")
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     parser.add_argument("--output", default=None)
     args = parser.parse_args()
 
     client = ACClient()
-    data = fetch_data(client)
+    data = fetch_data(client, max_contact_tags=args.max_items)
     report = analyze(data, args.rare_threshold, args.common_threshold)
     out = json.dumps(report, indent=2) if args.format == "json" else render_markdown(report)
 

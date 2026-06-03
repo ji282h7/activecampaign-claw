@@ -32,8 +32,8 @@ def _parse_iso(s):
         return None
 
 
-def fetch(client: ACClient) -> list:
-    return client.paginate("contacts", "contacts", max_items=50000)
+def fetch(client: ACClient, max_items: int = 50000) -> list:
+    return client.paginate("contacts", "contacts", max_items=max_items)
 
 
 def analyze(contacts: list, window_days: int, project_days: int) -> dict:
@@ -77,12 +77,14 @@ def main():
     parser = argparse.ArgumentParser(description="List growth forecast")
     parser.add_argument("--window-days", type=int, default=30)
     parser.add_argument("--project-days", type=int, default=90)
+    parser.add_argument("--max-items", type=int, default=50000,
+                        help="Cap /contacts stream (default 50000)")
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     parser.add_argument("--output", default=None)
     args = parser.parse_args()
 
     client = ACClient()
-    contacts = fetch(client)
+    contacts = fetch(client, max_items=args.max_items)
     r = analyze(contacts, args.window_days, args.project_days)
     out = json.dumps(r, indent=2) if args.format == "json" else render_markdown(r)
     if args.output:

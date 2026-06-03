@@ -18,11 +18,11 @@ from pathlib import Path
 from _ac_client import ACClient
 
 
-def fetch(client: ACClient, campaign_id: str | None) -> list:
+def fetch(client: ACClient, campaign_id: str | None, max_items: int = 20000) -> list:
     params = {}
     if campaign_id:
         params["filters[campaignid]"] = campaign_id
-    return client.paginate("bounceLogs", "bounceLogs", params=params, max_items=20000)
+    return client.paginate("bounceLogs", "bounceLogs", params=params, max_items=max_items)
 
 
 def analyze(bounces: list) -> dict:
@@ -72,12 +72,14 @@ def render_markdown(r: dict) -> str:
 def main():
     parser = argparse.ArgumentParser(description="Bounce breakdown")
     parser.add_argument("--campaign", default=None)
+    parser.add_argument("--max-items", type=int, default=20000,
+                        help="Cap /bounceLogs stream (default 20000)")
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     parser.add_argument("--output", default=None)
     args = parser.parse_args()
 
     client = ACClient()
-    bounces = fetch(client, args.campaign)
+    bounces = fetch(client, args.campaign, max_items=args.max_items)
     r = analyze(bounces)
     out = json.dumps(r, indent=2) if args.format == "json" else render_markdown(r)
     if args.output:

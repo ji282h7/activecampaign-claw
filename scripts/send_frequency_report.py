@@ -33,10 +33,10 @@ def _parse_iso(s):
         return None
 
 
-def fetch(client: ACClient, window_days: int, max_events: int) -> dict:
+def fetch(client: ACClient, window_days: int, max_events: int, max_items: int = 10000) -> dict:
     cutoff = datetime.now(timezone.utc) - timedelta(days=window_days)
     activities = client.fetch_engagement_events(max_items=max_events)
-    contacts = client.paginate("contacts", "contacts", max_items=10000)
+    contacts = client.paginate("contacts", "contacts", max_items=max_items)
     return {"activities": activities, "contacts": contacts, "cutoff": cutoff}
 
 
@@ -92,12 +92,14 @@ def main():
     parser = argparse.ArgumentParser(description="Sends per contact distribution")
     parser.add_argument("--window-days", type=int, default=30)
     parser.add_argument("--max-events", type=int, default=20000)
+    parser.add_argument("--max-items", type=int, default=10000,
+                        help="Cap /contacts stream (default 10000)")
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     parser.add_argument("--output", default=None)
     args = parser.parse_args()
 
     client = ACClient()
-    data = fetch(client, args.window_days, args.max_events)
+    data = fetch(client, args.window_days, args.max_events, max_items=args.max_items)
     r = analyze(data, args.window_days)
     out = json.dumps(r, indent=2, default=str) if args.format == "json" else render_markdown(r)
     if args.output:

@@ -59,8 +59,8 @@ STOP_WORDS = {
 }
 
 
-def fetch_data(client: ACClient) -> dict:
-    notes = client.paginate("notes", "notes", max_items=20000)
+def fetch_data(client: ACClient, max_items: int = 50000) -> dict:
+    notes = client.paginate("notes", "notes", max_items=max_items)
     users = client.paginate("users", "users", max_items=500)
     return {"notes": notes, "users": users}
 
@@ -198,13 +198,15 @@ def render_markdown(r: dict) -> str:
 def main():
     parser = argparse.ArgumentParser(description="Analyze contact + deal notes")
     parser.add_argument("--stale-days", type=int, default=30)
+    parser.add_argument("--max-items", type=int, default=20000,
+                        help="Cap /notes stream (default 20000)")
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     parser.add_argument("--output", default=None)
     args = parser.parse_args()
 
     client = ACClient()
     try:
-        data = fetch_data(client)
+        data = fetch_data(client, max_items=args.max_items)
     except ACClientError as e:
         if e.status_code == 403:
             print(render_feature_unavailable(
