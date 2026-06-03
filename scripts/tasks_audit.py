@@ -18,13 +18,15 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
-import json
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
-from pathlib import Path
 
-from _ac_client import ACClient, ACClientError, emit_files, render_feature_unavailable
+from _ac_client import (
+    ACClient,
+    ACClientError,
+    cli_main,
+    render_feature_unavailable,
+)
 from _ac_client import parse_date as _parse_date
 
 
@@ -194,23 +196,16 @@ def render_markdown(r: dict) -> str:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Audit task workload + overdue items")
-    parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
-    parser.add_argument("--output", default=None)
-    args = parser.parse_args()
-
-    client = ACClient()
-    data = fetch_data(client)
-    report = analyze(data)
-    out = json.dumps(report, indent=2) if args.format == "json" else render_markdown(report)
-
-    if args.output:
-        path = Path(args.output)
-        path.write_text(out)
-        print(f"Wrote {path}")
-        emit_files(path)
-    else:
-        print(out)
+    cli_main(
+        description="Audit task workload + overdue items",
+        fetch_data=fetch_data,
+        analyze=analyze,
+        render_markdown=render_markdown,
+        feature_unavailable=(
+            "Tasks (CRM)", "Plus",
+            "Tasks audit needs the /dealTasks endpoint.",
+        ),
+    )
 
 
 if __name__ == "__main__":

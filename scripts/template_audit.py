@@ -21,13 +21,10 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
-import json
 from collections import defaultdict
 from datetime import datetime, timezone
-from pathlib import Path
 
-from _ac_client import ACClient, emit_files
+from _ac_client import ACClient, cli_main
 from _ac_client import parse_date as _parse_date
 
 
@@ -162,25 +159,22 @@ def render_markdown(r: dict) -> str:
     return "\n".join(lines)
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Audit campaign templates")
+def _add_args(parser):
     parser.add_argument("--stale-days", type=int, default=180)
-    parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
-    parser.add_argument("--output", default=None)
-    args = parser.parse_args()
 
-    client = ACClient()
-    data = fetch_data(client)
-    report = analyze(data, stale_days=args.stale_days)
-    out = json.dumps(report, indent=2) if args.format == "json" else render_markdown(report)
 
-    if args.output:
-        path = Path(args.output)
-        path.write_text(out)
-        print(f"Wrote {path}")
-        emit_files(path)
-    else:
-        print(out)
+def _analyze(data, args):
+    return analyze(data, stale_days=args.stale_days)
+
+
+def main():
+    cli_main(
+        description="Audit campaign templates",
+        fetch_data=fetch_data,
+        analyze=_analyze,
+        render_markdown=render_markdown,
+        add_arguments=_add_args,
+    )
 
 
 if __name__ == "__main__":

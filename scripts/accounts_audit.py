@@ -21,13 +21,15 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
-import json
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
-from pathlib import Path
 
-from _ac_client import ACClient, ACClientError, emit_files, render_feature_unavailable
+from _ac_client import (
+    ACClient,
+    ACClientError,
+    cli_main,
+    render_feature_unavailable,
+)
 from _ac_client import parse_date as _parse_date
 
 
@@ -176,25 +178,26 @@ def render_markdown(r: dict) -> str:
     return "\n".join(lines)
 
 
-def main():
-    parser = argparse.ArgumentParser(description="Audit B2B accounts")
+def _add_args(parser):
     parser.add_argument("--stale-days", type=int, default=90)
-    parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
-    parser.add_argument("--output", default=None)
-    args = parser.parse_args()
 
-    client = ACClient()
-    data = fetch_data(client)
-    report = analyze(data, stale_days=args.stale_days)
-    out = json.dumps(report, indent=2) if args.format == "json" else render_markdown(report)
 
-    if args.output:
-        path = Path(args.output)
-        path.write_text(out)
-        print(f"Wrote {path}")
-        emit_files(path)
-    else:
-        print(out)
+def _analyze(data, args):
+    return analyze(data, stale_days=args.stale_days)
+
+
+def main():
+    cli_main(
+        description="Audit B2B accounts",
+        fetch_data=fetch_data,
+        analyze=_analyze,
+        render_markdown=render_markdown,
+        add_arguments=_add_args,
+        feature_unavailable=(
+            "B2B Accounts", "Plus",
+            "B2B accounts audit needs the /accounts endpoint.",
+        ),
+    )
 
 
 if __name__ == "__main__":

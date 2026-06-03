@@ -4,6 +4,17 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] — 2026-06-03
+
+### Added
+- `_skill/cli.py` — `cli_main()` driver that handles the common analysis-script boilerplate: argparse with standard `--format` and `--output` flags, `ACClient` instantiation, fetch → analyze → render → write flow, optional 403 → friendly-markdown handling, optional `emit_files()` trailer on output, optional `history.jsonl` logging. Re-exported from `_ac_client` so scripts opt in with `from _ac_client import cli_main`.
+- Pilot ports: `accounts_audit.py`, `tasks_audit.py`, `template_audit.py` now use `cli_main()` instead of writing their own main(). Their `main()` functions drop from ~20 lines of boilerplate to ~10 lines of declarative configuration.
+- 7 unit tests covering the cli_main happy path, `--format json`, `--output` + trailer emission, custom argparse arguments via the `add_arguments` callback, friendly 403 handling, propagation of non-403 errors, and history-recipe logging.
+
+### Notes
+- This is an opt-in helper, not a forced migration. The other 55 scripts are unchanged. Incremental adoption is expected.
+- `analyze` functions are detected as args-aware only when their signature includes a parameter literally named `args`. This avoids accidentally injecting the argparse `Namespace` into a parameter the script intended for something else (e.g., a `now=None` clock injector).
+
 ## [1.4.1] — 2026-06-03
 
 ### Changed

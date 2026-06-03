@@ -9,6 +9,8 @@ re-export them here.
 """
 
 # HTTP client + errors
+# CLI driver — opt-in helper that scripts can use instead of writing main()
+from _skill.cli import cli_main
 from _skill.client import (
     ACClient,
     ACClientError,
@@ -77,6 +79,7 @@ __all__ = [
     "Tag",
     "User",
     "WriteCapExceededError",
+    "cli_main",
     "HISTORY_FILE",
     "INSIGHTS_FILE",
     "STATE_DIR",
