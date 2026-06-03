@@ -39,6 +39,18 @@ from _skill.reports import (
 # String sanitization for API-sourced values
 from _skill.safety import sanitize
 
+# Optional structural shapes (TypedDicts) for AC v3 records.
+# Scripts may import these for type hints; existing code keeps using plain dicts.
+from _skill.schemas import (
+    Campaign,
+    Contact,
+    Deal,
+    DealTask,
+    Note,
+    Tag,
+    User,
+)
+
 # State file paths + load/save/age helpers + env var helper
 from _skill.state import (
     HISTORY_FILE,
@@ -56,7 +68,14 @@ from _skill.state import (
 __all__ = [
     "ACClient",
     "ACClientError",
+    "Campaign",
+    "Contact",
+    "Deal",
+    "DealTask",
+    "Note",
     "ReadOnlyModeError",
+    "Tag",
+    "User",
     "WriteCapExceededError",
     "HISTORY_FILE",
     "INSIGHTS_FILE",

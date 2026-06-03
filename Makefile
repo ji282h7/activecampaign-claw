@@ -27,9 +27,9 @@ release:
 	@echo "Bumping to $(VERSION)..."
 	@sed -i.bak -E 's/^version: .*/version: $(VERSION)/' SKILL.md && rm SKILL.md.bak
 	@sed -i.bak -E 's/^version = ".*"/version = "$(VERSION)"/' pyproject.toml && rm pyproject.toml.bak
-	@git add SKILL.md pyproject.toml CHANGELOG.md
+	@git add -A
 	@git commit -m "$(VERSION)"
-	@git tag -a "v$(VERSION)" -m "Release $(VERSION)"
+	@git tag -af "v$(VERSION)" -m "Release $(VERSION)"
 	@echo ""
 	@echo "Created commit + tag v$(VERSION). Review the diff, then:"
 	@echo "  git push --follow-tags"
