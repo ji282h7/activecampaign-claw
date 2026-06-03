@@ -38,18 +38,28 @@ from fixtures.mock_responses import (
 
 @pytest.fixture
 def tmp_state_dir(tmp_path):
-    """Patch STATE_DIR and STATE_FILE to use a temp directory."""
+    """Patch STATE_DIR and STATE_FILE to use a temp directory.
+
+    Patches both the facade module (`_ac_client.*`) and the underlying
+    implementation modules (`_skill.state.*`, `_skill.history.*`) so that
+    any code path resolves to the temp directory.
+    """
     state_dir = tmp_path / ".activecampaign-skill"
     state_dir.mkdir()
     state_file = state_dir / "state.json"
     history_file = state_dir / "history.jsonl"
-
     insights_file = state_dir / "insights.md"
 
     with patch("_ac_client.STATE_DIR", state_dir), \
          patch("_ac_client.STATE_FILE", state_file), \
          patch("_ac_client.HISTORY_FILE", history_file), \
-         patch("_ac_client.INSIGHTS_FILE", insights_file):
+         patch("_ac_client.INSIGHTS_FILE", insights_file), \
+         patch("_skill.state.STATE_DIR", state_dir), \
+         patch("_skill.state.STATE_FILE", state_file), \
+         patch("_skill.state.HISTORY_FILE", history_file), \
+         patch("_skill.state.INSIGHTS_FILE", insights_file), \
+         patch("_skill.history.HISTORY_FILE", history_file), \
+         patch("_skill.history.INSIGHTS_FILE", insights_file):
         yield state_dir
 
 

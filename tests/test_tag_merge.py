@@ -80,8 +80,11 @@ def test_render_plan_handles_error_with_suggestions():
     tags = [{"id": "1", "tag": "customer"}]
     plan = tag_merge.build_plan(_data(tags, []), "customers", "customer")
     md = tag_merge.render_plan(plan)
-    assert "ERROR" in md
+    # The friendly heading replaces the old "ERROR:" prefix; voice stays
+    # consistent with the rest of the skill.
+    assert "Can't run this merge" in md
     assert "Did you mean" in md
+    assert "ERROR" not in md
 
 
 def test_execute_refuses_when_refs_present_without_force(ac_client_factory):

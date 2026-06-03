@@ -23,7 +23,10 @@ def fetch(client: ACClient, email: str) -> dict:
     res = client.get("contacts", params={"email": email})
     contacts = res.get("contacts") or []
     if not contacts:
-        raise SystemExit(f"ERROR: no contact found with email {email}")
+        raise SystemExit(
+            f"No contact found with email '{email}'. "
+            f"Check the spelling, or look up the contact in your AC dashboard first."
+        )
     contact = contacts[0]
     cid = contact["id"]
 

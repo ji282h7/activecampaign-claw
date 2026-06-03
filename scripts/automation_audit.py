@@ -33,13 +33,6 @@ def _parse_iso(s):
         return None
 
 
-def _safe_int(v):
-    try:
-        return int(v)
-    except (TypeError, ValueError):
-        return 0
-
-
 def fetch(client: ACClient) -> dict:
     automations = client.paginate("automations", "automations", max_items=2000)
     contact_automations = client.paginate("contactAutomations", "contactAutomations", max_items=50000)

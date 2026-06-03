@@ -21,6 +21,7 @@ from pathlib import Path
 from statistics import mean
 
 from _ac_client import ACClient, ACClientError, render_feature_unavailable
+from _ac_client import safe_int as _safe_int
 
 
 def _parse_iso(s):
@@ -33,13 +34,6 @@ def _parse_iso(s):
         return dt
     except Exception:
         return None
-
-
-def _safe_int(v):
-    try:
-        return int(v)
-    except (TypeError, ValueError):
-        return 0
 
 
 def fetch(client: ACClient, days: int) -> dict:

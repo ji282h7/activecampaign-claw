@@ -31,6 +31,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from _ac_client import ACClient, ACClientError, emit_files, render_feature_unavailable
+from _ac_client import parse_date as _parse_date
 
 ACTION_PATTERNS = (
     r"\bfollow ?up\b",
@@ -56,20 +57,6 @@ STOP_WORDS = {
     "if", "then", "than", "not", "no", "yes", "ok", "okay", "https",
     "http", "com", "www",
 }
-
-
-def _parse_date(value: str | None) -> datetime | None:
-    if not value:
-        return None
-    for fmt in ("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
-        try:
-            dt = datetime.strptime(value.replace("Z", "+0000"), fmt)
-            if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
-            return dt
-        except ValueError:
-            continue
-    return None
 
 
 def fetch_data(client: ACClient) -> dict:

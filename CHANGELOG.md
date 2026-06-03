@@ -4,6 +4,13 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] — 2026-06-03
+
+### Changed
+- Internal refactor of `_ac_client.py` — implementation split into a `_skill/` sub-package (`client.py`, `state.py`, `history.py`, `reports.py`, `dates.py`, `safety.py`). `_ac_client.py` is now a thin facade that re-exports the public surface; all 58 scripts keep their existing imports unchanged.
+- Consolidated `_parse_date`, `_safe_int`, `_safe_float` helpers (previously duplicated across 22 scripts) into `_skill/dates.py`. Scripts now import canonical versions from `_ac_client`.
+- Standardized voice on user-facing input/scope messages — `send_simulator.py` and `tag_merge.py` no longer use `"ERROR:"` prefixes for non-error UX paths (missing scope flag, friendly merge-validation messages).
+
 ## [1.1.4] — 2026-06-03
 
 ### Changed

@@ -27,6 +27,7 @@ import sys
 from datetime import datetime, timedelta, timezone
 
 from _ac_client import ACClient, ACClientError, sanitize, save_state, state_age_days
+from _ac_client import safe_float as _safe_float
 
 
 def _normalize_options(opts) -> list:
@@ -137,13 +138,6 @@ def fetch_taxonomy(client: ACClient) -> dict:
             for a in automations
         ],
     }
-
-
-def _safe_float(val) -> float:
-    try:
-        return float(val or 0)
-    except (ValueError, TypeError):
-        return 0.0
 
 
 def _percentile(data: list[float], p: int) -> float:

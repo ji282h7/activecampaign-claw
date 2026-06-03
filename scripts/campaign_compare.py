@@ -14,13 +14,7 @@ import json
 from pathlib import Path
 
 from _ac_client import ACClient
-
-
-def _safe_int(v, default=0):
-    try:
-        return int(v)
-    except (TypeError, ValueError):
-        return default
+from _ac_client import safe_int as _safe_int
 
 
 def fetch_campaign(client: ACClient, cid: str) -> dict:

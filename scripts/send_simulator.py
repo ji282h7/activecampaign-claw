@@ -21,7 +21,7 @@ from pathlib import Path
 from _ac_client import ACClient, ACClientError, load_state
 
 
-def fetch_audience_size(client: ACClient, list_id, tag_id, segment_id, plain_count) -> int:
+def fetch_audience_size(client: ACClient, list_id, tag_id, segment_id, plain_count) -> int | None:
     if plain_count is not None:
         return plain_count
     if list_id:
@@ -36,7 +36,9 @@ def fetch_audience_size(client: ACClient, list_id, tag_id, segment_id, plain_cou
             return int((resp.get("meta") or {}).get("total", 0))
         except ACClientError:
             return 0
-    raise SystemExit("ERROR: provide one of --list, --tag, --segment, or --recipients")
+    # Caller didn't pass an audience scope. Surface a friendly message and
+    # return a sentinel so the main flow can print + exit cleanly.
+    return None
 
 
 def simulate(audience: int, baseline: dict) -> dict:
@@ -82,6 +84,19 @@ def main():
     baseline = state.get("baselines", {})
     client = ACClient()
     audience = fetch_audience_size(client, args.list_id, args.tag_id, args.segment_id, args.recipients)
+    if audience is None:
+        print(
+            "# Send Simulation\n\n"
+            "This report needs an audience to simulate against — pass exactly one of:\n\n"
+            "- `--list <id>` to simulate a send to a list\n"
+            "- `--tag <id>` to simulate a send to everyone with a tag\n"
+            "- `--segment <id>` to simulate a send to a saved segment\n"
+            "- `--recipients <n>` to simulate against an explicit headcount\n\n"
+            "Look up the id from `state.json` (run `calibrate.py` if needed) or "
+            "from `scripts/list_audit.py` / `scripts/tag_audit.py` / "
+            "`scripts/segment_audit.py`.\n"
+        )
+        return
     r = simulate(audience, baseline)
     out = json.dumps(r, indent=2) if args.format == "json" else render_markdown(r)
     if args.output:

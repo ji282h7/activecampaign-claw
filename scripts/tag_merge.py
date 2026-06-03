@@ -128,9 +128,13 @@ def build_plan(data: dict, source_name: str, target_name: str) -> dict:
 
 def render_plan(plan: dict) -> str:
     if plan.get("error"):
-        out = [f"ERROR: {plan['error']}"]
+        out = [
+            "# Can't run this merge",
+            "",
+            plan["error"],
+        ]
         if plan.get("suggestions"):
-            out.append("Did you mean one of these?")
+            out.extend(["", "Did you mean one of these?"])
             for s in plan["suggestions"]:
                 out.append(f"  - {s}")
         return "\n".join(out)

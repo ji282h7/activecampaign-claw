@@ -36,6 +36,9 @@ from _ac_client import (
     write_insight,
     write_report,
 )
+from _ac_client import (
+    safe_int as _safe_int,
+)
 
 
 def _days_ago(iso_str: str | None) -> float | None:
@@ -48,13 +51,6 @@ def _days_ago(iso_str: str | None) -> float | None:
         return (datetime.now(timezone.utc) - dt).total_seconds() / 86400
     except (ValueError, TypeError):
         return None
-
-
-def _safe_int(val, default: int = 0) -> int:
-    try:
-        return int(float(val or default))
-    except (ValueError, TypeError):
-        return default
 
 
 def fetch_open_deals(client: ACClient, pipeline_id: str | None = None) -> list[dict] | dict:

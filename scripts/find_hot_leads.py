@@ -34,6 +34,9 @@ from _ac_client import (
     write_insight,
     write_report,
 )
+from _ac_client import (
+    safe_float as _safe_float,
+)
 
 
 def _days_ago(iso_str: str | None) -> float | None:
@@ -46,13 +49,6 @@ def _days_ago(iso_str: str | None) -> float | None:
         return (datetime.now(timezone.utc) - dt).total_seconds() / 86400
     except (ValueError, TypeError):
         return None
-
-
-def _safe_float(val, default: float = 0.0) -> float:
-    try:
-        return float(val or default)
-    except (ValueError, TypeError):
-        return default
 
 
 def fetch_contacts_with_scores(client: ACClient, max_contacts: int = 500) -> list[dict]:

@@ -20,6 +20,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from _ac_client import ACClient, ACClientError, render_feature_unavailable
+from _ac_client import safe_float as _safe_float
 
 
 def _parse_iso(s):
@@ -32,13 +33,6 @@ def _parse_iso(s):
         return dt
     except Exception:
         return None
-
-
-def _safe_float(v):
-    try:
-        return float(v)
-    except (TypeError, ValueError):
-        return 0
 
 
 def fetch(client: ACClient) -> dict:

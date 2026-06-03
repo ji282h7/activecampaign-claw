@@ -20,17 +20,11 @@ from pathlib import Path
 from statistics import mean
 
 from _ac_client import ACClient
+from _ac_client import safe_int as _safe_int
 
 URGENCY_WORDS = re.compile(r"\b(now|today|hurry|last\s+chance|ends|deadline|urgent|limited|expir)\b", re.I)
 PERSONALIZATION = re.compile(r"%[A-Z_]+%|\{\{[^}]+\}\}")
 EMOJI_RE = re.compile(r"[\U0001F300-\U0001FAFF\U00002700-\U000027BF\U0001F600-\U0001F64F]")
-
-
-def _safe_int(v):
-    try:
-        return int(v)
-    except (TypeError, ValueError):
-        return 0
 
 
 def _parse_iso(s):

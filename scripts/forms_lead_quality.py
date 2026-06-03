@@ -39,20 +39,6 @@ from pathlib import Path
 from _ac_client import ACClient, emit_files
 
 
-def _parse_date(value: str | None) -> datetime | None:
-    if not value:
-        return None
-    for fmt in ("%Y-%m-%dT%H:%M:%S%z", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
-        try:
-            dt = datetime.strptime(value.replace("Z", "+0000"), fmt)
-            if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
-            return dt
-        except ValueError:
-            continue
-    return None
-
-
 def _form_subscribelists(form: dict) -> list[str]:
     """Form objects expose the target list in a few historical shapes."""
     raw = form.get("subscribelist") or form.get("subscribeList") or form.get("list")
