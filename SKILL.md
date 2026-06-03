@@ -1,7 +1,7 @@
 ---
 name: activecampaign-claw
-displayName: "AI Marketing + ActiveCampaign"
-version: 1.1.2
+displayName: "ActiveCampaign (50+ Capabilities)"
+version: 1.1.3
 license: MIT-0
 author: ji282h7
 summary: "ActiveCampaign agent for marketers + sales: 50+ reports for list, campaign, automation, and pipeline analysis."
