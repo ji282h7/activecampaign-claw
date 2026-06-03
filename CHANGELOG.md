@@ -4,6 +4,18 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] — 2026-06-03
+
+### Added
+- `Makefile` with `test`, `lint`, `verify`, `release`, and `publish` targets. `make release VERSION=x.y.z` bumps version files, commits, and creates a `v<version>` git tag locally so every release is identifiable in history.
+- `.github/dependabot.yml` — weekly checks for GitHub Actions and pip dependency updates.
+- `.github/workflows/codeql.yml` — CodeQL static analysis on every push, PR, and weekly schedule.
+- `_skill/schemas.py` — `TypedDict`s for `Contact`, `Deal`, `Campaign`, `Tag`, `User`, `DealTask`, `Note` covering the documented AC v3 record shapes. Re-exported from `_ac_client` for opt-in adoption by new code.
+- Snapshot-style renderer tests in `tests/test_render_snapshots.py` that assert full markdown output (not just substring presence), catching silent formatting drift.
+
+### Changed
+- CI matrix trimmed: ubuntu-latest only on Python 3.9 + 3.12 (was ubuntu+macos × 4 Python versions). 8 jobs → 2 jobs per push.
+
 ## [1.3.1] — 2026-06-03
 
 ### Added
