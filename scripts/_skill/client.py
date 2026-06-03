@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import random
 import sys
 import time
+from datetime import datetime, timezone
+from pathlib import Path
 
 if sys.version_info < (3, 9):  # noqa: UP036 - friendly error for users running scripts directly
     sys.stderr.write(
@@ -25,6 +28,66 @@ class ACClientError(Exception):
     def __init__(self, status_code: int, message: str):
         self.status_code = status_code
         super().__init__(f"HTTP {status_code}: {message}")
+
+
+class ReadOnlyModeError(Exception):
+    """Raised when a write is attempted while AC_READ_ONLY=1 is set."""
+
+
+class WriteCapExceededError(Exception):
+    """Raised when a script tries to perform more writes than AC_MAX_WRITES allows."""
+
+
+# Audit log lives next to history.jsonl. Importing _skill.state at module load
+# would create a tight coupling, so we resolve the path lazily.
+_WRITES_LOG_NAME = "writes.jsonl"
+
+
+def _writes_log_path() -> Path:
+    return Path.home() / ".activecampaign-skill" / _WRITES_LOG_NAME
+
+
+def _env_bool(name: str, default: bool = False) -> bool:
+    raw = os.environ.get(name, "").strip().lower()
+    if raw in ("1", "true", "yes", "on"):
+        return True
+    if raw in ("0", "false", "no", "off", ""):
+        return default
+    return default
+
+
+def _env_int(name: str, default: int) -> int:
+    raw = os.environ.get(name, "").strip()
+    if not raw:
+        return default
+    try:
+        return max(0, int(raw))
+    except ValueError:
+        return default
+
+
+def _hash_payload(data: bytes | None) -> str:
+    if not data:
+        return ""
+    return hashlib.sha256(data).hexdigest()[:16]
+
+
+def _append_writes_log(entry: dict) -> None:
+    """Append a JSON line to the writes audit log. Best-effort — never raises."""
+    try:
+        path = _writes_log_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            os.chmod(path.parent, 0o700)
+        except OSError:
+            pass
+        fd = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
+        with os.fdopen(fd, "a") as f:
+            f.write(json.dumps(entry) + "\n")
+    except OSError:
+        # Audit log is best-effort. We don't want to block a write if the
+        # filesystem is read-only or the user's home dir is missing.
+        pass
 
 
 class ACClient:
@@ -53,6 +116,11 @@ class ACClient:
         self.token = tok
         self._request_count = 0
         self._last_request_time = 0.0
+        # Write-safety state. Cap and read-only flag are read at __init__ time
+        # so a single process has a fixed budget for its lifetime.
+        self._write_count = 0
+        self._max_writes = _env_int("AC_MAX_WRITES", 10)
+        self._read_only = _env_bool("AC_READ_ONLY")
 
     def _throttle(self) -> None:
         """Proactive rate limiter — ensures we stay under 5 req/sec."""
@@ -156,16 +224,58 @@ class ACClient:
     def get(self, path: str, params: dict | None = None) -> dict:
         return self._request("GET", path, params=params)
 
+    def _check_write_allowed(self, method: str, path: str) -> None:
+        """Enforce read-only mode + per-process write cap.
+
+        Read-only mode raises immediately. The cap raises when the *next*
+        write would exceed the limit, so callers know they were on the edge.
+        """
+        if self._read_only:
+            raise ReadOnlyModeError(
+                f"AC_READ_ONLY=1 is set — refusing {method} {path}. "
+                f"Unset the env var to allow modifications."
+            )
+        if self._write_count >= self._max_writes:
+            raise WriteCapExceededError(
+                f"Per-process write cap reached "
+                f"({self._write_count}/{self._max_writes}). "
+                f"Re-run the script if this was intended, or raise the cap "
+                f"with AC_MAX_WRITES=<n>."
+            )
+
+    def write(self, method: str, path: str, payload: dict | None = None) -> dict:
+        """Single audited write path for POST / PUT / DELETE.
+
+        Enforces:
+          - `AC_READ_ONLY=1` short-circuits (no request goes out).
+          - Per-process cap (`AC_MAX_WRITES`, default 10).
+          - Best-effort audit line written to ~/.activecampaign-skill/writes.jsonl
+            with endpoint, method, payload hash (NOT payload), and timestamp.
+        """
+        if method not in {"POST", "PUT", "DELETE"}:
+            raise ValueError(f"write() called with non-write method {method!r}")
+        self._check_write_allowed(method, path)
+
+        data = json.dumps(payload).encode("utf-8") if payload is not None else None
+        _append_writes_log({
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "method": method,
+            "path": path,
+            "payload_sha256_16": _hash_payload(data),
+            "script": Path(sys.argv[0]).name if sys.argv else "",
+            "write_seq": self._write_count + 1,
+        })
+        self._write_count += 1
+        return self._request(method, path, data=data)
+
     def post(self, path: str, payload: dict) -> dict:
-        data = json.dumps(payload).encode("utf-8")
-        return self._request("POST", path, data=data)
+        return self.write("POST", path, payload)
 
     def put(self, path: str, payload: dict) -> dict:
-        data = json.dumps(payload).encode("utf-8")
-        return self._request("PUT", path, data=data)
+        return self.write("PUT", path, payload)
 
     def delete(self, path: str) -> dict:
-        return self._request("DELETE", path)
+        return self.write("DELETE", path, None)
 
     def stream(self, path: str, key: str, params: dict | None = None,
                limit_per_page: int = 100, max_items: int | None = None):

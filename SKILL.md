@@ -1,7 +1,7 @@
 ---
 name: activecampaign-claw
 displayName: "ActiveCampaign (50+ Capabilities)"
-version: 1.2.0
+version: 1.3.0
 license: MIT-0
 author: ji282h7
 summary: "ActiveCampaign agent for marketers + sales: 50+ reports for list, campaign, automation, and pipeline analysis."
@@ -146,14 +146,17 @@ Direct integration with ActiveCampaign's v3 API, built to operate the way an exp
 
 The skill is **analysis-first**. Calibration and the 50+ scripts in `scripts/` read your AC account and produce reports — they don't change your data.
 
-A small number of operations can modify records in your account when you explicitly ask for them. Every one of those is gated by the safeguards in "Critical operating rules" below — specifically:
+A small number of operations can modify records in your account when you explicitly ask for them. Every modification flows through one auditable code path with the following guarantees:
 
 1. **Use a least-privileged AC integration user** (see `INSTALL.md`). Admin is not required and not recommended; the token's blast radius should match what you intend to run.
-2. **Explicit confirmation before any POST / PUT / DELETE.** The agent shows the endpoint, the JSON payload, and a plain-English summary. Nothing proceeds without your explicit "yes."
-3. **Deletes require their own confirmation step**, with a description of what is lost and a statement that the action is permanent.
-4. **No more than 10 modification operations batched** without pausing for confirmation again.
-5. **Destructive helpers (e.g. `tag_merge.py`) are dry-run by default**; `--confirm` is required to execute, and they refuse to operate on anything still referenced by an active automation or segment.
-6. **All modification calls go through the Python client** (`scripts/_ac_client.py`), which sanitizes API-sourced values before any subprocess call to prevent shell injection.
+2. **Single audited write path.** `ACClient.post / put / delete` all route through one `write()` helper that enforces the rules below and records every modification.
+3. **Optional `AC_READ_ONLY=1` env var.** When set, every write is refused at the client layer before any HTTPS request goes out. Lets you run the entire script suite in pure-analysis mode without risk.
+4. **Per-process write cap (default 10).** Override with `AC_MAX_WRITES=<n>` if intended. A runaway script can't perform more than the budget allows in one invocation.
+5. **Audit log** at `~/.activecampaign-skill/writes.jsonl` (file mode 0600). Every write records timestamp, endpoint, method, payload SHA-256 (NOT payload), invoking script, and sequence number.
+6. **Explicit confirmation before any POST / PUT / DELETE.** The agent shows the endpoint, the JSON payload, and a plain-English summary. Nothing proceeds without your explicit "yes."
+7. **Deletes require their own confirmation step**, with a description of what is lost and a statement that the action is permanent.
+8. **Destructive helpers (e.g. `tag_merge.py`) are dry-run by default**; `--confirm` is required to execute, and they refuse to operate on anything still referenced by an active automation or segment.
+9. **All modification calls go through the Python client** (`scripts/_ac_client.py`), which sanitizes API-sourced values before any subprocess call to prevent shell injection.
 
 When asked, the skill can act on contacts, deals, custom-field values, and tags — but only behind those gates, scoped to the records you specify, and previewed first.
 

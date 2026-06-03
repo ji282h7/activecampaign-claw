@@ -4,6 +4,16 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] — 2026-06-03
+
+### Added
+- `ACClient.write()` — single audited code path for POST / PUT / DELETE. All write methods now route through it.
+- `AC_READ_ONLY=1` env var. When set, every write is refused at the client layer before any HTTPS request goes out. Reads still work normally. Lets you run any analysis without modification risk.
+- `AC_MAX_WRITES=<n>` env var. Default is 10 modifications per process invocation; can be overridden per-run when intended.
+- Write audit log at `~/.activecampaign-skill/writes.jsonl` (file mode 0600). Records timestamp, endpoint, method, payload SHA-256 (not the payload itself), invoking script, and sequence number.
+- New `ReadOnlyModeError` and `WriteCapExceededError` exception types, re-exported from `_ac_client`.
+- 16 new unit tests covering the read-only path, per-process cap (default + override + cross-method counting), audit log shape (payload-hash, not payload), and best-effort log-failure tolerance.
+
 ## [1.2.0] — 2026-06-03
 
 ### Changed

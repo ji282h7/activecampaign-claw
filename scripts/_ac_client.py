@@ -9,7 +9,12 @@ re-export them here.
 """
 
 # HTTP client + errors
-from _skill.client import ACClient, ACClientError
+from _skill.client import (
+    ACClient,
+    ACClientError,
+    ReadOnlyModeError,
+    WriteCapExceededError,
+)
 
 # Date and numeric coercion
 from _skill.dates import parse_date, safe_float, safe_int
@@ -51,6 +56,8 @@ from _skill.state import (
 __all__ = [
     "ACClient",
     "ACClientError",
+    "ReadOnlyModeError",
+    "WriteCapExceededError",
     "HISTORY_FILE",
     "INSIGHTS_FILE",
     "STATE_DIR",
