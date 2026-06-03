@@ -16,7 +16,7 @@ import argparse
 import json
 from pathlib import Path
 
-from _ac_client import ACClient, ACClientError, emit_files
+from _ac_client import ACClient, emit_files
 
 
 def fetch(client: ACClient, email: str) -> dict:
@@ -30,25 +30,27 @@ def fetch(client: ACClient, email: str) -> dict:
     contact = contacts[0]
     cid = contact["id"]
 
-    out = {"contact": contact}
-    for endpoint, key in [
-        ("fieldValues", "fieldValues"),
-        ("contactTags", "contactTags"),
-        ("contactLists", "contactLists"),
-        ("contactAutomations", "contactAutomations"),
-    ]:
-        try:
-            r = client.paginate(endpoint, key, params={"filters[contact]": cid}, max_items=10000)
-            out[key] = r
-        except ACClientError as e:
-            out[key] = {"error": str(e)}
-
-    # deals (may 403 on accounts without Deals)
-    try:
-        deals = client.paginate("deals", "deals", params={"filters[contact]": cid}, max_items=2000)
-        out["deals"] = deals
-    except ACClientError as e:
-        out["deals"] = {"error": str(e)} if e.status_code != 403 else "Deals feature not enabled"
+    # Fetch every per-contact subresource in parallel. The shared client
+    # rate-limit lock keeps total throughput at 5 req/sec, but the pool
+    # overlaps request prep + parsing for a meaningful speedup on the
+    # 5-endpoint export. Each label keys both the request and the result.
+    out: dict = {"contact": contact}
+    filters = {"filters[contact]": cid}
+    bulk = client.fetch_many([
+        ("fieldValues",        "fieldValues",        filters, 10000),
+        ("contactTags",        "contactTags",        filters, 10000),
+        ("contactLists",       "contactLists",       filters, 10000),
+        ("contactAutomations", "contactAutomations", filters, 10000),
+        ("deals",              "deals",              filters, 2000),
+    ])
+    for label, value in bulk.items():
+        if isinstance(value, dict) and "error" in value:
+            if label == "deals" and value.get("status_code") == 403:
+                out["deals"] = "Deals feature not enabled"
+            else:
+                out[label] = value
+        else:
+            out[label] = value
 
     return out
 

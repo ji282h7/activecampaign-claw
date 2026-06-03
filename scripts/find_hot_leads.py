@@ -51,21 +51,26 @@ def _days_ago(iso_str: str | None) -> float | None:
         return None
 
 
-def fetch_contacts_with_scores(client: ACClient, max_contacts: int = 500) -> list[dict]:
+def fetch_contacts_with_scores(client: ACClient, max_contacts: int = 500,
+                               max_aux: int = 50000) -> list[dict]:
     """Enrich contacts with their best score + tag ids.
 
     Uses bulk endpoints (`/scoreValues`, `/contactTags`) and joins client-side,
     instead of fetching per-contact subresources. This collapses 2N+1 calls
     into ~3 — critical for accounts with thousands of contacts.
+
+    `max_aux` caps the auxiliary collection pulls so a very large account
+    doesn't OOM. Default 50k covers the typical Plus-tier scoring library;
+    raise via `--max-aux` on the CLI if you've calibrated and need more.
     """
     contacts = client.paginate("contacts", "contacts", max_items=max_contacts)
 
     try:
-        all_scores = client.paginate("scoreValues", "scoreValues", max_items=200000)
+        all_scores = client.paginate("scoreValues", "scoreValues", max_items=max_aux)
     except Exception:
         all_scores = []
     try:
-        all_tags = client.paginate("contactTags", "contactTags", max_items=200000)
+        all_tags = client.paginate("contactTags", "contactTags", max_items=max_aux)
     except Exception:
         all_tags = []
 
@@ -233,6 +238,8 @@ def main():
     parser.add_argument("--min-score", type=float, default=0)
     parser.add_argument("--max-contacts", type=int, default=5000,
                         help="Cap the contact-scan size (default: 5000)")
+    parser.add_argument("--max-aux", type=int, default=50000,
+                        help="Cap the /scoreValues + /contactTags bulk pulls (default: 50000)")
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     parser.add_argument("--output", type=str, default=None)
     args = parser.parse_args()
@@ -241,7 +248,9 @@ def main():
     client = ACClient()
 
     print("→ Fetching contacts with scores...", file=sys.stderr)
-    contacts = fetch_contacts_with_scores(client, max_contacts=args.max_contacts)
+    contacts = fetch_contacts_with_scores(
+        client, max_contacts=args.max_contacts, max_aux=args.max_aux,
+    )
 
     print("→ Fetching open deals...", file=sys.stderr)
     deals_by_contact = fetch_open_deals_by_contact(client)

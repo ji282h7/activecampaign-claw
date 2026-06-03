@@ -307,12 +307,17 @@ class TestRateLimitRetry:
     _request method (with its retry loop) actually runs."""
 
     def _make_client(self):
+        import threading
         with patch("_ac_client.ACClient.__init__", lambda self, *a, **kw: None):
             client = _ac_client.ACClient.__new__(_ac_client.ACClient)
             client.base = "https://test.api-us1.com/api/3"
             client.token = "tok"
             client._request_count = 0
             client._last_request_time = 0.0
+            client._throttle_lock = threading.Lock()
+            client._write_count = 0
+            client._max_writes = 10
+            client._read_only = False
         return client
 
     def _mock_response(self, body: dict):

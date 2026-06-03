@@ -165,12 +165,18 @@ def _build_mock_client(route_map: dict | None = None):
                 return response
         return {}
 
+    import threading
     with patch("_ac_client.ACClient.__init__", lambda self, *a, **kw: None):
         from _ac_client import ACClient
         client = ACClient.__new__(ACClient)
         client.base = "https://testco.api-us1.com/api/3"
         client.token = "test-token"
         client._request_count = 0
+        client._last_request_time = 0.0
+        client._throttle_lock = threading.Lock()
+        client._write_count = 0
+        client._max_writes = 10
+        client._read_only = False
         client._request = mock_request
         client.get = lambda path, params=None: mock_request("GET", path, params=params)
         client.post = lambda path, payload: mock_request("POST", path, data=payload)

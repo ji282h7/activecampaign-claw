@@ -7,7 +7,9 @@ import json
 import os
 import random
 import sys
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -116,6 +118,9 @@ class ACClient:
         self.token = tok
         self._request_count = 0
         self._last_request_time = 0.0
+        # Lock for cross-thread throttle correctness when fetch_many() runs
+        # multiple endpoint requests concurrently against the same client.
+        self._throttle_lock = threading.Lock()
         # Write-safety state. Cap and read-only flag are read at __init__ time
         # so a single process has a fixed budget for its lifetime.
         self._write_count = 0
@@ -123,11 +128,16 @@ class ACClient:
         self._read_only = _env_bool("AC_READ_ONLY")
 
     def _throttle(self) -> None:
-        """Proactive rate limiter — ensures we stay under 5 req/sec."""
-        elapsed = time.monotonic() - self._last_request_time
-        if elapsed < self.MIN_REQUEST_INTERVAL:
-            time.sleep(self.MIN_REQUEST_INTERVAL - elapsed)
-        self._last_request_time = time.monotonic()
+        """Proactive rate limiter — ensures we stay under 5 req/sec.
+
+        Thread-safe: the lock makes spacing correct when multiple threads
+        share a client via fetch_many() or any other concurrent caller.
+        """
+        with self._throttle_lock:
+            elapsed = time.monotonic() - self._last_request_time
+            if elapsed < self.MIN_REQUEST_INTERVAL:
+                time.sleep(self.MIN_REQUEST_INTERVAL - elapsed)
+            self._last_request_time = time.monotonic()
 
     @staticmethod
     def _backoff_delay(attempt: int, base: float = 1.0, cap: float = 60.0) -> float:
@@ -303,6 +313,44 @@ class ACClient:
     def paginate(self, path: str, key: str, params: dict | None = None,
                  limit_per_page: int = 100, max_items: int = 5000) -> list:
         return list(self.stream(path, key, params, limit_per_page, max_items))
+
+    def fetch_many(
+        self,
+        requests: list[tuple[str, str, dict | None, int]],
+        max_workers: int = 4,
+    ) -> dict[str, list]:
+        """Concurrently paginate multiple endpoints, respecting rate limits.
+
+        `requests` is a list of `(label, path, params, max_items)` tuples.
+        Returns `{label: list_of_records}`. On error, the value is
+        `{"error": "...", "status_code": N}` for that label only — other
+        endpoints continue.
+
+        Thread safety: the shared client's `_throttle_lock` serializes
+        outgoing requests at 5/sec total, so concurrency wins come from
+        overlapping request preparation + parsing, not from breaking the
+        rate limit. The default 4-worker pool is conservative.
+        """
+        results: dict = {}
+
+        def _one(label: str, path: str, params: dict | None, max_items: int) -> tuple[str, object]:
+            try:
+                key = label  # AC v3 collection responses key on the resource name
+                # If label != key (rare), the caller can post-process.
+                records = self.paginate(path, key, params=params, max_items=max_items)
+                return label, records
+            except ACClientError as e:
+                return label, {"error": str(e), "status_code": e.status_code}
+            except Exception as e:  # noqa: BLE001 — best-effort one-of-many
+                return label, {"error": str(e), "status_code": 0}
+
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            futures = [pool.submit(_one, label, path, params, max_items)
+                       for (label, path, params, max_items) in requests]
+            for fut in as_completed(futures):
+                label, value = fut.result()
+                results[label] = value
+        return results
 
     def fetch_engagement_events(self, max_items: int = 30000, quiet: bool = False) -> list:
         """Return a normalized list of engagement events.

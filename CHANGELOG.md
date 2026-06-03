@@ -4,6 +4,19 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] — 2026-06-03
+
+### Added
+- `ACClient.fetch_many()` — concurrent multi-endpoint pagination via `ThreadPoolExecutor`. Each request keeps its own label; per-endpoint errors are returned as sentinels so a single failure doesn't break sibling fetches.
+- Thread-safe `_throttle()` (now wrapped in a per-client lock). Multiple concurrent callers stay correctly spaced at 5 req/sec.
+- `--max-aux` flag on `find_hot_leads.py` (default 50000) to bound the bulk `/scoreValues` and `/contactTags` pulls. Replaces the previous hardcoded 200000.
+
+### Changed
+- `data_subject_export.py` — refactored to use `fetch_many` for its five per-contact subresource pulls. Parses + indexes in parallel where the rate limit allows.
+
+### Fixed
+- Test fixtures that constructed an `ACClient` via `__new__` now initialize `_throttle_lock`, `_write_count`, `_max_writes`, and `_read_only` so the new client-state additions don't break out-of-band construction.
+
 ## [1.3.0] — 2026-06-03
 
 ### Added
