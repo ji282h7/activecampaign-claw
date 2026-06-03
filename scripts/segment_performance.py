@@ -95,7 +95,17 @@ def main():
     args = parser.parse_args()
 
     if not (args.list_id or args.tag_id or args.segment_id):
-        raise SystemExit("ERROR: provide one of --list, --tag, or --segment")
+        print(
+            "# Segment Performance\n\n"
+            "This report needs an audience scope — pass exactly one of:\n\n"
+            "- `--list <id>` to analyze a list's engagement\n"
+            "- `--tag <id>` to analyze a tag's engagement\n"
+            "- `--segment <id>` to analyze a saved segment's engagement\n\n"
+            "Look up the id from `state.json` (run `calibrate.py` if needed) or "
+            "from `scripts/list_audit.py` / `scripts/tag_audit.py` / "
+            "`scripts/segment_audit.py`.\n"
+        )
+        return
 
     label = (
         f"list={args.list_id}" if args.list_id

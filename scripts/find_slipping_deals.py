@@ -25,11 +25,13 @@ from pathlib import Path
 
 from _ac_client import (
     ACClient,
+    ACClientError,
     compare_to_previous,
     detect_patterns,
     ensure_state,
     load_history,
     log_outcome,
+    render_feature_unavailable,
     sanitize,
     write_insight,
     write_report,
@@ -55,11 +57,16 @@ def _safe_int(val, default: int = 0) -> int:
         return default
 
 
-def fetch_open_deals(client: ACClient, pipeline_id: str | None = None) -> list[dict]:
+def fetch_open_deals(client: ACClient, pipeline_id: str | None = None) -> list[dict] | dict:
     params: dict = {"filters[status]": "0"}
     if pipeline_id:
         params["filters[d_groupid]"] = pipeline_id
-    return client.paginate("deals", "deals", params=params, max_items=1000)
+    try:
+        return client.paginate("deals", "deals", params=params, max_items=1000)
+    except ACClientError as e:
+        if e.status_code == 403:
+            return {"unavailable": True}
+        raise
 
 
 def analyze_deals(deals: list[dict], state: dict,
@@ -237,6 +244,13 @@ def main():
 
     print("→ Fetching open deals...", file=sys.stderr)
     deals = fetch_open_deals(client, pipeline_id=args.pipeline)
+
+    if isinstance(deals, dict) and deals.get("unavailable"):
+        print(render_feature_unavailable(
+            "Deals (CRM)", "Plus",
+            "Slipping-deals analysis needs the /deals endpoint.",
+        ))
+        return
 
     print("→ Analyzing pipeline...", file=sys.stderr)
     analysis = analyze_deals(deals, state, stale_days=args.stale_days)

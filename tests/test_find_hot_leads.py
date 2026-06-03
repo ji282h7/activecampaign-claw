@@ -15,22 +15,25 @@ def _build_lead_test_client(ac_client_factory):
     contacts = make_contacts_with_engagement(20)
     deals = make_deals(10)
 
+    # find_hot_leads now uses the bulk endpoints /scoreValues and
+    # /contactTags and joins client-side (was: 2 per-contact calls per
+    # contact, which was O(N) requests). Fixture mirrors the bulk shape.
+    score_values = [
+        {"contact": str(i), "score_id": "1",
+         "score_value": str(max(0, 100 - (i - 1) * 10))}
+        for i in range(1, 21)
+    ]
+    contact_tags = [
+        {"contact": str(i), "tag": "1" if i <= 5 else "3"}
+        for i in range(1, 21)
+    ]
+
     routes = {
         "contacts": contacts,
         "deals": deals,
+        "scoreValues": {"scoreValues": score_values},
+        "contactTags": {"contactTags": contact_tags},
     }
-    for i in range(1, 21):
-        routes[f"contacts/{i}/scoreValues"] = {
-            "scoreValues": [
-                {"score_id": "1", "score_value": str(max(0, 100 - (i - 1) * 10))}
-            ]
-        }
-        routes[f"contacts/{i}/contactTags"] = {
-            "contactTags": [
-                {"tag": "1"} if i <= 5 else {"tag": "3"}
-            ]
-        }
-
     return ac_client_factory(routes)
 
 
@@ -130,3 +133,74 @@ class TestFormatMarkdown:
         from find_hot_leads import format_markdown
         md = format_markdown([], top=5)
         assert "No leads found" in md
+
+
+class TestMaxContactsAndPlanGating:
+    """Locks in the bulk-endpoint refactor + the new --max-contacts cap +
+    graceful 403 on /deals."""
+
+    def test_max_contacts_is_respected(self, ac_client_factory):
+        """max_contacts limits the contacts paged in, even when more exist."""
+        contacts = [{"id": str(i), "email": f"u{i}@example.com",
+                     "firstName": "F", "lastName": "L",
+                     "cdate": "2026-01-01", "mdate": "2026-01-01"}
+                    for i in range(1, 51)]
+        routes = {
+            "contacts": {"contacts": contacts, "meta": {"total": "50"}},
+            "scoreValues": {"scoreValues": []},
+            "contactTags": {"contactTags": []},
+        }
+        client = ac_client_factory(routes)
+        from find_hot_leads import fetch_contacts_with_scores
+        result = fetch_contacts_with_scores(client, max_contacts=10)
+        assert len(result) == 10
+
+    def test_bulk_endpoint_join_picks_best_score(self, ac_client_factory):
+        """When a contact has multiple score rules, the highest wins."""
+        contacts = [{"id": "42", "email": "x@x.co",
+                     "firstName": "X", "lastName": "Y",
+                     "cdate": "2026-01-01", "mdate": "2026-01-01"}]
+        routes = {
+            "contacts": {"contacts": contacts, "meta": {"total": "1"}},
+            "scoreValues": {"scoreValues": [
+                {"contact": "42", "score_id": "1", "score_value": "30"},
+                {"contact": "42", "score_id": "2", "score_value": "92"},
+                {"contact": "42", "score_id": "3", "score_value": "60"},
+            ]},
+            "contactTags": {"contactTags": [{"contact": "42", "tag": "7"}]},
+        }
+        client = ac_client_factory(routes)
+        from find_hot_leads import fetch_contacts_with_scores
+        result = fetch_contacts_with_scores(client, max_contacts=10)
+        assert len(result) == 1
+        assert result[0]["score"] == 92
+        assert "7" in result[0]["tag_ids"]
+
+    def test_deals_unavailable_returns_empty_mapping(self, ac_client_factory):
+        """When /deals returns 403 (Lite plan), scoring still works without it."""
+        from _ac_client import ACClientError
+        client = ac_client_factory({})
+
+        def raising(_method, _path, **_kw):
+            raise ACClientError(403, "Deals not enabled")
+        client._request = raising
+        client.get = lambda path, params=None: raising("GET", path, params=params)
+
+        from find_hot_leads import fetch_open_deals_by_contact
+        result = fetch_open_deals_by_contact(client)
+        assert result == {}
+
+    def test_deals_500_still_raises(self, ac_client_factory):
+        from _ac_client import ACClientError
+        client = ac_client_factory({})
+
+        def raising(_method, _path, **_kw):
+            raise ACClientError(500, "boom")
+        client._request = raising
+        client.get = lambda path, params=None: raising("GET", path, params=params)
+
+        from find_hot_leads import fetch_open_deals_by_contact
+        import pytest
+        with pytest.raises(ACClientError):
+            fetch_open_deals_by_contact(client)
+

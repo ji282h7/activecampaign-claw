@@ -23,6 +23,7 @@ from pathlib import Path
 
 from _ac_client import (
     ACClient,
+    ACClientError,
     compare_to_previous,
     detect_patterns,
     emit_files,
@@ -55,43 +56,63 @@ def _safe_float(val, default: float = 0.0) -> float:
 
 
 def fetch_contacts_with_scores(client: ACClient, max_contacts: int = 500) -> list[dict]:
+    """Enrich contacts with their best score + tag ids.
+
+    Uses bulk endpoints (`/scoreValues`, `/contactTags`) and joins client-side,
+    instead of fetching per-contact subresources. This collapses 2N+1 calls
+    into ~3 — critical for accounts with thousands of contacts.
+    """
     contacts = client.paginate("contacts", "contacts", max_items=max_contacts)
+
+    try:
+        all_scores = client.paginate("scoreValues", "scoreValues", max_items=200000)
+    except Exception:
+        all_scores = []
+    try:
+        all_tags = client.paginate("contactTags", "contactTags", max_items=200000)
+    except Exception:
+        all_tags = []
+
+    best_by_contact: dict[str, float] = {}
+    for sv in all_scores:
+        cid = str(sv.get("contact") or "")
+        if not cid:
+            continue
+        val = _safe_float(sv.get("score_value"))
+        if val > best_by_contact.get(cid, 0):
+            best_by_contact[cid] = val
+
+    tags_by_contact: dict[str, list] = {}
+    for ct in all_tags:
+        cid = str(ct.get("contact") or "")
+        if cid:
+            tags_by_contact.setdefault(cid, []).append(ct.get("tag"))
+
     enriched = []
     for c in contacts:
-        cid = c.get("id", "")
-        try:
-            scores_resp = client.get(f"contacts/{cid}/scoreValues")
-            score_values = scores_resp.get("scoreValues", [])
-        except Exception:
-            score_values = []
-
-        best_score = 0
-        for sv in score_values:
-            val = _safe_float(sv.get("score_value"))
-            if val > best_score:
-                best_score = val
-
-        try:
-            tags_resp = client.get(f"contacts/{cid}/contactTags")
-            contact_tags = tags_resp.get("contactTags", [])
-        except Exception:
-            contact_tags = []
-
+        cid = str(c.get("id", ""))
         enriched.append({
             "id": cid,
             "email": sanitize(c.get("email", "")),
             "first_name": sanitize(c.get("firstName", "")),
             "last_name": sanitize(c.get("lastName", "")),
-            "score": best_score,
+            "score": best_by_contact.get(cid, 0),
             "cdate": c.get("cdate"),
             "mdate": c.get("mdate"),
-            "tag_ids": [t.get("tag") for t in contact_tags],
+            "tag_ids": tags_by_contact.get(cid, []),
         })
     return enriched
 
 
 def fetch_open_deals_by_contact(client: ACClient) -> dict[str, list[dict]]:
-    deals = client.paginate("deals", "deals", params={"filters[status]": "0"}, max_items=500)
+    try:
+        deals = client.paginate("deals", "deals", params={"filters[status]": "0"}, max_items=500)
+    except ACClientError as e:
+        if e.status_code == 403:
+            # Deals feature not on plan — return empty mapping; scoring still works
+            # off the contact-score + tag signals.
+            return {}
+        raise
     by_contact: dict[str, list[dict]] = {}
     for d in deals:
         contact = d.get("contact")
@@ -214,6 +235,8 @@ def main():
     parser = argparse.ArgumentParser(description="Find hot leads")
     parser.add_argument("--top", type=int, default=10)
     parser.add_argument("--min-score", type=float, default=0)
+    parser.add_argument("--max-contacts", type=int, default=5000,
+                        help="Cap the contact-scan size (default: 5000)")
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     parser.add_argument("--output", type=str, default=None)
     args = parser.parse_args()
@@ -222,7 +245,7 @@ def main():
     client = ACClient()
 
     print("→ Fetching contacts with scores...", file=sys.stderr)
-    contacts = fetch_contacts_with_scores(client, max_contacts=300)
+    contacts = fetch_contacts_with_scores(client, max_contacts=args.max_contacts)
 
     print("→ Fetching open deals...", file=sys.stderr)
     deals_by_contact = fetch_open_deals_by_contact(client)

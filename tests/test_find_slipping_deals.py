@@ -162,3 +162,38 @@ class TestFormatMarkdown:
         md = format_markdown(analysis, top=10)
 
         assert "None" in md or "✅" in md
+
+
+class TestPlanGating:
+    """Verify the 403 path produces a friendly message, not a crash."""
+
+    def test_fetch_returns_unavailable_sentinel_on_403(self, ac_client_factory):
+        """When AC returns 403 on /deals, fetch_open_deals signals it cleanly."""
+        from _ac_client import ACClientError
+        client = ac_client_factory({})
+
+        def raising(_method, _path, **_kw):
+            raise ACClientError(403, "Deals feature not enabled")
+        client._request = raising
+        client.get = lambda path, params=None: raising("GET", path, params=params)
+
+        from find_slipping_deals import fetch_open_deals
+        result = fetch_open_deals(client)
+        assert isinstance(result, dict)
+        assert result.get("unavailable") is True
+
+    def test_other_errors_still_raise(self, ac_client_factory):
+        """500-class errors should not be silently swallowed."""
+        from _ac_client import ACClientError
+        client = ac_client_factory({})
+
+        def raising(_method, _path, **_kw):
+            raise ACClientError(500, "boom")
+        client._request = raising
+        client.get = lambda path, params=None: raising("GET", path, params=params)
+
+        from find_slipping_deals import fetch_open_deals
+        import pytest
+        with pytest.raises(ACClientError):
+            fetch_open_deals(client)
+

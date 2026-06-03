@@ -4,6 +4,14 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] — 2026-06-03
+
+### Changed
+- `find_hot_leads.py` — switched to bulk `/scoreValues` + `/contactTags` joins with a client-side index, replacing the per-contact subresource pattern. Added `--max-contacts` flag (default 5000) for runtime control. The script also tolerates a 403 on `/deals` and continues with score + tag signals only.
+- `find_slipping_deals.py` — routes a 403 on `/deals` through the shared `render_feature_unavailable` helper for consistent voice with the other Deals-dependent scripts.
+- `segment_performance.py` — when invoked without `--list`, `--tag`, or `--segment`, prints a multi-line markdown block explaining the audience-scope requirement and points at the relevant audit scripts for finding ids. Exits cleanly rather than raising.
+- 7 new unit tests covering the bulk-endpoint join, the `--max-contacts` cap, plan-gating fallbacks, and the friendly audience-scope message.
+
 ## [1.1.3] — 2026-06-02
 
 ### Changed
