@@ -192,8 +192,8 @@ class TestPlanGating:
         client._request = raising
         client.get = lambda path, params=None: raising("GET", path, params=params)
 
-        from find_slipping_deals import fetch_open_deals
         import pytest
+        from find_slipping_deals import fetch_open_deals
         with pytest.raises(ACClientError):
             fetch_open_deals(client)
 

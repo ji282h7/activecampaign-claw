@@ -199,8 +199,8 @@ class TestMaxContactsAndPlanGating:
         client._request = raising
         client.get = lambda path, params=None: raising("GET", path, params=params)
 
-        from find_hot_leads import fetch_open_deals_by_contact
         import pytest
+        from find_hot_leads import fetch_open_deals_by_contact
         with pytest.raises(ACClientError):
             fetch_open_deals_by_contact(client)
 
