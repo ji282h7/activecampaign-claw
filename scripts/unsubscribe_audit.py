@@ -12,12 +12,10 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
 import json
 import re
-from pathlib import Path
 
-from _ac_client import ACClient
+from _ac_client import ACClient, cli_main
 
 UNSUB_PATTERNS = [
     r"%UNSUBSCRIBE%",
@@ -100,23 +98,12 @@ def render_markdown(r: dict) -> str:
         lines.append("**All messages and forms pass the basic check.**")
     return "\n".join(lines)
 
-
 def main():
-    parser = argparse.ArgumentParser(description="Audit unsubscribe/opt-in compliance")
-    parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
-    parser.add_argument("--output", default=None)
-    args = parser.parse_args()
-
-    client = ACClient()
-    data = fetch(client)
-    r = analyze(data)
-    out = json.dumps(r, indent=2) if args.format == "json" else render_markdown(r)
-    if args.output:
-        Path(args.output).write_text(out)
-        print(f"Wrote {args.output}")
-    else:
-        print(out)
-
-
+    cli_main(
+        description="Audit unsubscribe/opt-in compliance",
+        fetch_data=fetch,
+        analyze=analyze,
+        render_markdown=render_markdown,
+    )
 if __name__ == "__main__":
     main()

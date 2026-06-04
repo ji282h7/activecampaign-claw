@@ -14,12 +14,10 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
 import json
 from collections import Counter, defaultdict
-from pathlib import Path
 
-from _ac_client import ACClient
+from _ac_client import ACClient, cli_main
 
 
 def fetch_data(client: ACClient, max_contact_tags: int = 50000) -> dict:
@@ -167,28 +165,27 @@ def render_markdown(r: dict) -> str:
         lines.append("")
     return "\n".join(lines)
 
-
-def main():
-    parser = argparse.ArgumentParser(description="Audit tag hygiene")
+def _add_args(parser):
     parser.add_argument("--rare-threshold", type=int, default=5)
     parser.add_argument("--common-threshold", type=float, default=0.5)
-    parser.add_argument("--max-items", type=int, default=50000,
-                        help="Cap the /contactTags stream (default 50000)")
-    parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
-    parser.add_argument("--output", default=None)
-    args = parser.parse_args()
-
-    client = ACClient()
-    data = fetch_data(client, max_contact_tags=args.max_items)
-    report = analyze(data, args.rare_threshold, args.common_threshold)
-    out = json.dumps(report, indent=2) if args.format == "json" else render_markdown(report)
-
-    if args.output:
-        Path(args.output).write_text(out)
-        print(f"Wrote {args.output}")
-    else:
-        print(out)
+    parser.add_argument("--max-items", type=int, default=50000)
 
 
+def _fetch(client, args):
+    return fetch_data(client, max_contact_tags=args.max_items)
+
+
+def _analyze(data, args):
+    return analyze(data, args.rare_threshold, args.common_threshold)
+
+
+def main():
+    cli_main(
+        description="Audit tag hygiene",
+        fetch_data=_fetch,
+        analyze=_analyze,
+        render_markdown=render_markdown,
+        add_arguments=_add_args,
+    )
 if __name__ == "__main__":
     main()

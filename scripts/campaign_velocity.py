@@ -12,14 +12,11 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
-import json
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 from statistics import mean
 
-from _ac_client import ACClient
+from _ac_client import ACClient, cli_main
 from _ac_client import safe_int as _safe_int
 
 
@@ -101,24 +98,25 @@ def render_markdown(r: dict) -> str:
         lines.append("_No sends with list mapping in window._")
     return "\n".join(lines)
 
+def _add_args(parser):
+    parser.add_argument("--window-days", type=int, default=90)
+
+
+def _fetch(client, args):
+    return fetch(client, args.window_days)
+
+
+def _analyze(data, args):
+    return analyze(data, args.window_days)
+
 
 def main():
-    parser = argparse.ArgumentParser(description="Campaign send velocity per list")
-    parser.add_argument("--window-days", type=int, default=90)
-    parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
-    parser.add_argument("--output", default=None)
-    args = parser.parse_args()
-
-    client = ACClient()
-    data = fetch(client, args.window_days)
-    r = analyze(data, args.window_days)
-    out = json.dumps(r, indent=2, default=str) if args.format == "json" else render_markdown(r)
-    if args.output:
-        Path(args.output).write_text(out)
-        print(f"Wrote {args.output}")
-    else:
-        print(out)
-
-
+    cli_main(
+        description="Campaign send velocity per list",
+        fetch_data=_fetch,
+        analyze=_analyze,
+        render_markdown=render_markdown,
+        add_arguments=_add_args,
+    )
 if __name__ == "__main__":
     main()

@@ -12,13 +12,10 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
-import json
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 
-from _ac_client import ACClient
+from _ac_client import ACClient, cli_main
 
 
 def _parse_iso(s):
@@ -105,26 +102,26 @@ def render_markdown(r: dict) -> str:
         )
     return "\n".join(lines)
 
+def _add_args(parser):
+    parser.add_argument("--window-days", type=int, default=30)
+    parser.add_argument("--max-items", type=int, default=50000)
+
+
+def _fetch(client, args):
+    return fetch(client, max_items=args.max_items)
+
+
+def _analyze(data, args):
+    return analyze(data, args.window_days)
+
 
 def main():
-    parser = argparse.ArgumentParser(description="Audit automations")
-    parser.add_argument("--window-days", type=int, default=30)
-    parser.add_argument("--max-items", type=int, default=50000,
-                        help="Cap /contactAutomations stream (default 50000)")
-    parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
-    parser.add_argument("--output", default=None)
-    args = parser.parse_args()
-
-    client = ACClient()
-    data = fetch(client, max_items=args.max_items)
-    r = analyze(data, args.window_days)
-    out = json.dumps(r, indent=2) if args.format == "json" else render_markdown(r)
-    if args.output:
-        Path(args.output).write_text(out)
-        print(f"Wrote {args.output}")
-    else:
-        print(out)
-
-
+    cli_main(
+        description="Audit automations",
+        fetch_data=_fetch,
+        analyze=_analyze,
+        render_markdown=render_markdown,
+        add_arguments=_add_args,
+    )
 if __name__ == "__main__":
     main()

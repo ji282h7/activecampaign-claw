@@ -12,12 +12,9 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
-import json
 from collections import Counter, defaultdict
-from pathlib import Path
 
-from _ac_client import ACClient
+from _ac_client import ACClient, cli_main
 
 
 def fetch(client: ACClient, max_contacts: int) -> dict:
@@ -102,24 +99,21 @@ def render_markdown(r: dict) -> str:
         lines.append(f"| {cf['title']} | {cf['type']} | {cf['populated']} | {cf['pct']:.1f}% |")
     return "\n".join(lines)
 
+def _add_args(parser):
+    parser.add_argument("--max-contacts", type=int, default=5000)
+
+
+def _fetch(client, args):
+    return fetch(client, args.max_contacts)
+
 
 def main():
-    parser = argparse.ArgumentParser(description="Contact field completeness")
-    parser.add_argument("--max-contacts", type=int, default=5000)
-    parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
-    parser.add_argument("--output", default=None)
-    args = parser.parse_args()
-
-    client = ACClient()
-    data = fetch(client, args.max_contacts)
-    r = analyze(data)
-    out = json.dumps(r, indent=2) if args.format == "json" else render_markdown(r)
-    if args.output:
-        Path(args.output).write_text(out)
-        print(f"Wrote {args.output}")
-    else:
-        print(out)
-
-
+    cli_main(
+        description="Contact field completeness",
+        fetch_data=_fetch,
+        analyze=analyze,
+        render_markdown=render_markdown,
+        add_arguments=_add_args,
+    )
 if __name__ == "__main__":
     main()

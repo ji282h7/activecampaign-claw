@@ -4,6 +4,13 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] — 2026-06-03
+
+### Changed
+- Ported 22 additional scripts to the `cli_main()` driver from 1.5.0: `automation_audit`, `automation_dependency_map`, `automation_overlap`, `broken_automation_detector`, `campaign_velocity`, `contact_completeness_report`, `content_length_report`, `custom_field_audit`, `domain_engagement_report`, `engagement_decay`, `form_audit`, `from_name_report`, `link_performance`, `list_audit`, `list_overlap`, `new_subscriber_quality`, `segment_audit`, `send_frequency_report`, `stale_contact_report`, `stalled_automations`, `tag_audit`, `unsubscribe_audit`. 25 scripts now use the consolidated driver.
+- Each ported script's `main()` dropped from ~15–25 lines of argparse + flow boilerplate to ~6–12 lines of declarative configuration. Behavior is unchanged.
+- Restored `--max-items` declarations on 8 scripts where the automated porter dropped them from the argparse layer while keeping them in the fetch wiring.
+
 ## [1.5.0] — 2026-06-03
 
 ### Added

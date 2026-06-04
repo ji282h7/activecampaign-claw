@@ -12,14 +12,11 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
-import json
 import re
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
 from statistics import mean
 
-from _ac_client import ACClient
+from _ac_client import ACClient, cli_main
 from _ac_client import safe_int as _safe_int
 
 
@@ -129,24 +126,21 @@ def render_markdown(r: dict) -> str:
         lines.append(f"- {k}: {v*100:.2f}%" if v is not None else f"- {k}: —")
     return "\n".join(lines)
 
+def _add_args(parser):
+    parser.add_argument("--days", type=int, default=180)
+
+
+def _fetch(client, args):
+    return fetch(client, args.days)
+
 
 def main():
-    parser = argparse.ArgumentParser(description="Content length / CTA analysis")
-    parser.add_argument("--days", type=int, default=180)
-    parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
-    parser.add_argument("--output", default=None)
-    args = parser.parse_args()
-
-    client = ACClient()
-    data = fetch(client, args.days)
-    r = analyze(data)
-    out = json.dumps(r, indent=2) if args.format == "json" else render_markdown(r)
-    if args.output:
-        Path(args.output).write_text(out)
-        print(f"Wrote {args.output}")
-    else:
-        print(out)
-
-
+    cli_main(
+        description="Content length / CTA analysis",
+        fetch_data=_fetch,
+        analyze=analyze,
+        render_markdown=render_markdown,
+        add_arguments=_add_args,
+    )
 if __name__ == "__main__":
     main()

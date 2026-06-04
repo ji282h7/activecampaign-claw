@@ -11,13 +11,10 @@ Usage:
 
 from __future__ import annotations
 
-import argparse
-import json
 from collections import Counter
 from datetime import datetime, timezone
-from pathlib import Path
 
-from _ac_client import ACClient
+from _ac_client import ACClient, cli_main
 
 
 def _days_since(iso_str: str | None) -> float | None:
@@ -113,25 +110,22 @@ def render_markdown(r: dict) -> str:
         )
     return "\n".join(lines)
 
-
-def main():
-    parser = argparse.ArgumentParser(description="Audit list health")
+def _add_args(parser):
     parser.add_argument("--max-items", type=int, default=50000,
                         help="Cap /contactLists stream (default 50000)")
-    parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
-    parser.add_argument("--output", default=None)
-    args = parser.parse_args()
-
-    client = ACClient()
-    data = fetch(client, max_items=args.max_items)
-    r = analyze(data)
-    out = json.dumps(r, indent=2) if args.format == "json" else render_markdown(r)
-    if args.output:
-        Path(args.output).write_text(out)
-        print(f"Wrote {args.output}")
-    else:
-        print(out)
 
 
+def _fetch(client, args):
+    return fetch(client, max_items=args.max_items)
+
+
+def main():
+    cli_main(
+        description="Audit list health",
+        fetch_data=_fetch,
+        analyze=analyze,
+        render_markdown=render_markdown,
+        add_arguments=_add_args,
+    )
 if __name__ == "__main__":
     main()
