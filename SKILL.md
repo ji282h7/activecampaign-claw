@@ -1,7 +1,7 @@
 ---
 name: activecampaign-claw
 displayName: "ActiveCampaign (50+ Capabilities)"
-version: 1.6.0
+version: 1.7.0
 license: MIT-0
 author: ji282h7
 summary: "ActiveCampaign agent for marketers + sales: 50+ reports for list, campaign, automation, and pipeline analysis."
@@ -258,6 +258,22 @@ If `state.json` exists and is fresh, skip the welcome flow. Jump straight to ans
 ## How to use this skill
 
 ### Decision tree — "I want to do X"
+
+#### Quick lookups (prefer these for single-record questions)
+
+These are sub-second single-call scripts. Use them whenever the user is asking about **one specific thing** — don't reach for the audit scripts.
+
+| If the user wants to... | Run |
+|---|---|
+| Look up a contact by email | `scripts/contact_lookup.py --email <email>` |
+| Look up a contact by ID | `scripts/contact_by_id.py <id>` |
+| Get the most recent N contacts | `scripts/contact_recent.py [--limit N]` |
+| Look up a deal by ID | `scripts/deal_by_id.py <id>` |
+| Find a tag id by name | `scripts/tag_lookup.py --name <name>` *(checks state.json first; no API call if cached)* |
+| Find an automation id by name | `scripts/automation_lookup.py --name <name>` *(state.json first)* |
+| See the most recent campaign send | `scripts/last_campaign.py` |
+
+**When the user asks "find / look up / what's the id / what's the most recent" — prefer these over the audit scripts. The audits paginate thousands of records; these single-call scripts return in <1s.**
 
 #### Recipe-driven workflows
 

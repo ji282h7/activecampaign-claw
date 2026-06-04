@@ -4,6 +4,16 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] — 2026-06-04
+
+### Added
+- 7 quick-lookup scripts for single-record questions, each a single API call with sub-second runtime: `contact_lookup.py --email`, `contact_recent.py [--limit N]`, `contact_by_id.py <id>`, `deal_by_id.py <id>`, `tag_lookup.py --name <name>`, `automation_lookup.py --name <name>`, `last_campaign.py`.
+- `tag_lookup` and `automation_lookup` check `state.json` first and only fall back to the API when the local taxonomy doesn't already have the answer.
+- 17 new unit tests + 24 smoke tests (auto-discovered for the 7 new scripts) covering analyze + render + state-first paths.
+
+### Changed
+- SKILL.md decision tree — added a "Quick lookups" section at the top, instructing the agent to prefer these single-call scripts over the audit scripts whenever the user asks about one specific contact / deal / tag / automation / campaign. Reduces routing latency for the common "find / look up / what's the most recent" intent from 5–10s to ~500ms.
+
 ## [1.6.0] — 2026-06-03
 
 ### Added
