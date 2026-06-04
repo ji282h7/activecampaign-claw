@@ -4,6 +4,12 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.1] — 2026-06-04
+
+### Fixed
+- `cli_main` 403 / `feature_unavailable` path now respects `--format json` and emits a `{"unavailable": true, "feature": ..., "plan_required": ..., "reason": ...}` sentinel instead of always printing the markdown block. Pipelines downstream that expect JSON were getting markdown when hitting a plan-tier-gated endpoint on Lite accounts.
+- 1 new unit test locking the JSON-on-403 contract.
+
 ## [1.9.0] — 2026-06-04
 
 ### Added

@@ -95,7 +95,15 @@ def cli_main(
     except ACClientError as e:
         if e.status_code == 403 and feature_unavailable is not None:
             feature, plan, what = feature_unavailable
-            print(render_feature_unavailable(feature, plan, what))
+            if args.format == "json":
+                print(json.dumps({
+                    "unavailable": True,
+                    "feature": feature,
+                    "plan_required": plan,
+                    "reason": what,
+                }, indent=2))
+            else:
+                print(render_feature_unavailable(feature, plan, what))
             return
         raise
 

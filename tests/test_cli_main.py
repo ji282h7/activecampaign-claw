@@ -110,6 +110,34 @@ def test_feature_unavailable_renders_friendly_on_403(monkeypatch, capsys):
     assert "ERROR" not in out
 
 
+def test_feature_unavailable_returns_json_when_format_json(monkeypatch, capsys):
+    """A 403 should produce a JSON unavailable-sentinel when --format json
+    is requested, not the markdown block — otherwise pipelines downstream
+    that expect JSON break."""
+    monkeypatch.setenv("AC_API_URL", "https://test.api-us1.com")
+    monkeypatch.setenv("AC_API_TOKEN", "tok")
+    monkeypatch.setattr(sys, "argv", _build_argv("--format", "json"))
+
+    def fetch(client):
+        raise ACClientError(403, "Deals not enabled")
+
+    cli_main(
+        description="x",
+        fetch_data=fetch,
+        analyze=lambda d: {},
+        render_markdown=lambda r: "should not be called",
+        feature_unavailable=("Deals (CRM)", "Plus", "Needs /deals."),
+    )
+    out = capsys.readouterr().out
+    parsed = json.loads(out)
+    assert parsed == {
+        "unavailable": True,
+        "feature": "Deals (CRM)",
+        "plan_required": "Plus",
+        "reason": "Needs /deals.",
+    }
+
+
 def test_non_403_error_still_propagates(monkeypatch):
     monkeypatch.setenv("AC_API_URL", "https://test.api-us1.com")
     monkeypatch.setenv("AC_API_TOKEN", "tok")
