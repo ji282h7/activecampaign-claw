@@ -295,6 +295,31 @@ def validate_connection(client: ACClient) -> dict:
         sys.exit(1)
 
 
+_FIRST_RUN_NOTICE = """\
+ActiveCampaign skill — first-time setup
+========================================
+
+This calibration will read the following from your AC account using the
+token you provided:
+
+  - List, tag, automation, custom-field, and pipeline definitions
+  - 90-day campaign baselines (open/click rates, send patterns)
+  - Account-level counts (no contact PII)
+
+It will write the result to a local JSON file at:
+
+  ~/.activecampaign-skill/state.json   (mode 0600, your user only)
+
+Nothing is sent off your machine. The skill never transmits data to any
+third party. To remove all skill-managed local state later:
+
+  rm -rf ~/.activecampaign-skill/
+
+See SKILL.md "Local files and data retention" for the full list of files
+this skill may create.
+"""
+
+
 def main():
     quick = "--quick" in sys.argv
     validate_only = "--validate" in sys.argv
@@ -302,9 +327,13 @@ def main():
 
     validate_connection(client)
 
+    from _ac_client import STATE_FILE
+    if not STATE_FILE.exists() and not validate_only:
+        # First-time setup: show the disclosure
+        print(_FIRST_RUN_NOTICE)
+
     if validate_only:
         print("✓ Connection valid. Ready to calibrate.")
-        from _ac_client import STATE_FILE
         if STATE_FILE.exists():
             age = state_age_days()
             if age is not None:

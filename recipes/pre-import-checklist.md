@@ -97,7 +97,7 @@ After the user reviews the report, the agent should ask:
 
 1. **If verdict is PASS:** "Want me to draft an AC import config (list to import to, tags to apply, source field) so you have everything ready?"
 2. **If verdict is CONDITIONAL:** "Should I generate a cleaned CSV with the flagged rows removed? I'll show you the diff before writing."
-3. **If verdict is DO-NOT-IMPORT:** "This looks like a [scraped / very dirty / non-opt-in] list. Importing it will hurt your sender reputation — sending to scraped role addresses is the #1 cause of spam-trap hits. Want to discuss alternatives (re-collecting consent, double opt-in, or buying a smaller verified list instead)?"
+3. **If verdict is DO-NOT-IMPORT:** "This looks like a [scraped / very dirty / non-opt-in] list. Importing it will hurt your sender reputation — sending to scraped role addresses is the #1 cause of spam-trap hits. Want to discuss alternatives (re-collecting consent via a sign-up form, a double opt-in confirmation flow, or running a re-engagement campaign on contacts you already have permission to email)?"
 
 ## Outcome logging
 

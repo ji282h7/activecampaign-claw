@@ -1,7 +1,7 @@
 ---
 name: activecampaign-claw
 displayName: "ActiveCampaign (50+ Capabilities)"
-version: 1.9.1
+version: 1.9.2
 license: MIT-0
 author: ji282h7
 summary: "ActiveCampaign agent for marketers + sales: 50+ reports for list, campaign, automation, and pipeline analysis."
@@ -38,14 +38,14 @@ allowed-tools:
   - Bash
   - Read
 when_to_use:
-  # daily / strategic
-  - "give me my morning briefing or daily digest from ActiveCampaign"
-  - "design a welcome series, onboarding sequence, or drip campaign (spec only — user builds in AC)"
-  - "clean up my pipeline, do deal hygiene, or find stale deals"
-  - "audit my list health, check deliverability, or clean my list"
-  - "find my hottest leads or rank contacts by lead score"
-  - "which deals are slipping, overdue, or need attention"
-  - "calibrate my ActiveCampaign account or refresh state"
+  # daily / strategic — explicit AC-scoped requests
+  - "run my ActiveCampaign daily-digest recipe"
+  - "design a welcome-series email sequence for ActiveCampaign (spec only — user builds in AC UI)"
+  - "find slipping deals in my ActiveCampaign pipeline"
+  - "audit my ActiveCampaign list health and deliverability"
+  - "rank my ActiveCampaign contacts by lead score"
+  - "show overdue deals in my ActiveCampaign account"
+  - "calibrate my ActiveCampaign account or refresh local state.json"
   # contact + deal lookups (read)
   - "look up a contact in ActiveCampaign or check their profile"
   - "review the tags applied to a contact"
@@ -144,9 +144,11 @@ Direct integration with ActiveCampaign's v3 API, built to operate the way an exp
 
 ## Operating model
 
-The skill is **analysis-first**. Calibration and the 50+ scripts in `scripts/` read your AC account and produce reports — they don't change your data.
+> **Scope:** This skill operates against the AC account whose token you provide. It reads and (with explicit user confirmation) modifies records inside *that account only*. There is no cross-account access, no third-party data transmission, and no telemetry. All data — reports, exports, snapshots, history — is written to local files on your own machine.
 
-A small number of operations can modify records in your account when you explicitly ask for them. Every modification flows through one auditable code path with the following guarantees:
+The skill is **analysis-first**. Most of the 60+ scripts in `scripts/` are read-only: they pull data, produce a report, and exit.
+
+**Write capabilities — explicitly declared:** A small number of scripts can modify records in the AC account when you ask for them. These include contact updates, contact tagging, list subscription changes, automation enrollment, deal updates, custom-field value updates, and tag-merge operations. Every modification flows through one auditable code path with the following guarantees:
 
 1. **Use a least-privileged AC integration user** (see `INSTALL.md`). Admin is not required and not recommended; the token's blast radius should match what you intend to run.
 2. **Single audited write path.** `ACClient.post / put / delete` all route through one `write()` helper that enforces the rules below and records every modification.
@@ -159,6 +161,26 @@ A small number of operations can modify records in your account when you explici
 9. **All modification calls go through the Python client** (`scripts/_ac_client.py`), which sanitizes API-sourced values before any subprocess call to prevent shell injection.
 
 When asked, the skill can act on contacts, deals, custom-field values, and tags — but only behind those gates, scoped to the records you specify, and previewed first.
+
+## Local files and data retention
+
+Calibration, history, and any reports written via `--output` produce local files only. The skill never transmits data to a third party. Files live under `~/.activecampaign-skill/` with mode `0600` and are owned by the running user:
+
+| File | Purpose | Created by | Retention |
+|---|---|---|---|
+| `state.json` | Calibrated taxonomy + 90-day baselines | `calibrate.py` | Until you recalibrate or delete it |
+| `history.jsonl` | Append-only log of recipe/script runs (no contact PII; just operation metrics) | Most scripts via `log_outcome()` | Manual — see below |
+| `insights.md` | Persistent findings from prior runs | Scripts via `write_insight()` | Manual |
+| `writes.jsonl` | Audit log of POST/PUT/DELETE operations (payload hash, not payload) | `_ac_client.write()` | Manual |
+| `snapshots/*.json` | Versioned account snapshots | `snapshot.py`, `export_account.py` | Manual |
+
+All files can be inspected with normal text tools and deleted by removing the directory. Recommended retention: prune `history.jsonl` and snapshots every 90 days unless you need longer-term trend analysis. No data is sent off your machine.
+
+To wipe everything the skill has stored locally:
+
+```bash
+rm -rf ~/.activecampaign-skill/
+```
 
 ## Examples
 

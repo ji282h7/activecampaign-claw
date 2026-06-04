@@ -2,18 +2,24 @@
 """
 suppression_export.py — Export all suppressed contacts (unsub, bounce) with timestamps.
 
-Required for compliance audits and ESP migration. Pulls contacts with
-status 2 (unsubscribed) and 3 (bounced) plus bounce log details.
+Use this when you need to demonstrate suppression compliance, migrate
+to another ESP, or audit unsub trends. The output includes contact email
+addresses — treat it as you would any customer-data export.
+
+Confirmation: this script requires the `--confirm` flag before running.
+Without it, the script prints a notice describing what will be exported
+and asks the user to re-run with `--confirm`.
 
 Usage:
-  python3 suppression_export.py
-  python3 suppression_export.py --format json --output suppression.json
+  python3 suppression_export.py --confirm
+  python3 suppression_export.py --confirm --format json --output suppression.json
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import sys
 from collections import Counter
 from pathlib import Path
 
@@ -100,11 +106,43 @@ def render_markdown(r: dict) -> str:
     return "\n".join(lines)
 
 
+_CONFIRM_NOTICE = """\
+# Suppression export — confirmation required
+
+This script will export every suppressed contact in your AC account,
+including:
+
+  - Email addresses
+  - Unsubscribe and bounce timestamps
+  - Bounce reason codes
+
+The output is a local file (or stdout) — it is never sent anywhere.
+Treat it like any other customer-data export: store it securely, share
+it only with the people who need it for the legitimate business reason
+(compliance audit, ESP migration, internal review).
+
+To proceed:
+
+  python3 scripts/suppression_export.py --confirm
+
+To save to a file instead of printing:
+
+  python3 scripts/suppression_export.py --confirm --output suppression.json --format json
+"""
+
+
 def main():
     parser = argparse.ArgumentParser(description="Export suppressed contacts")
+    parser.add_argument("--confirm", action="store_true",
+                        help="Required to actually export. Without it, "
+                             "prints a notice describing what would be exported.")
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     parser.add_argument("--output", default=None)
     args = parser.parse_args()
+
+    if not args.confirm:
+        print(_CONFIRM_NOTICE)
+        sys.exit(0)
 
     client = ACClient()
     data = fetch(client)

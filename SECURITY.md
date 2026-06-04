@@ -44,6 +44,24 @@ Out of scope:
 - Issues that require already having privileged access to the user's machine
 - Social engineering of the user
 
+## Design philosophy and scope of operation
+
+This skill is built around a single, important constraint: **it operates only against the AC account whose token you provide**, and it does so on your behalf as the legitimate account holder.
+
+A few specific consequences of that constraint are worth calling out because automated security scanners sometimes misread the patterns:
+
+1. **The data you see is your own.** Reports include contact emails, names, deal values, and similar information *because that information lives in your AC account, which you own and operate*. Displaying it back to you is not a privacy leak — it is the entire point of a reporting tool. The skill does not share data with the skill author, the marketplace, or any other third party. All output is written to local files on your machine or printed in your terminal session.
+
+2. **Exports are backups, not exfiltration.** Scripts like `snapshot.py`, `export_account.py`, and `data_subject_export.py` write your data to a local JSON file. This is the same right you have through AC's own dashboard export. The data does not travel anywhere it doesn't already have access to — you are the data controller.
+
+3. **GDPR Article 15 (SAR) support is a feature, not a risk.** `data_subject_export.py` exists to help account holders fulfill their legal obligation when a customer requests their data. This is a compliance feature, not a way to extract data that someone shouldn't have. The output is written locally so the operator can forward it through whatever legally-required channel applies.
+
+4. **Webhook audit is not SSRF.** `webhook_audit.py` probes the webhook URLs *you have already configured in your AC account*. It cannot be redirected to arbitrary third-party targets and offers a `--skip-probe` flag if you prefer not to make the outbound check. This is "verify your own configuration" — not "make my server fetch arbitrary URLs."
+
+5. **CSV validation is read-only.** `import_validator.py` validates a CSV against deliverability rules. It does not push the CSV to AC, and it does not call any AC write endpoint. Bulk-import to AC is performed in AC's own UI, by the user, after they review the validator's report.
+
+6. **Write operations exist and are explicitly declared.** A subset of scripts modify records in your AC account when you ask them to. The "Operating model" section of SKILL.md enumerates these and the multi-layer safeguards around them (least-privileged token, `AC_READ_ONLY=1` env var, `AC_MAX_WRITES` per-process cap, audit log, dry-run defaults on destructive helpers, explicit user confirmation before every POST/PUT/DELETE).
+
 ## Hardening notes for users
 
 - Use a dedicated AC integration user with the minimum permissions needed.
@@ -54,6 +72,13 @@ Out of scope:
   on the device.
 - The skill never sends data to third-party services — only to your own AC
   account via your own token.
+- For pure-analysis use, set `AC_READ_ONLY=1` in your shell environment before
+  invoking any script. This refuses every write at the HTTP layer before any
+  request goes out.
+- Treat any exported file (suppression list, GDPR export, snapshot) as you
+  would any other customer-data export: store it securely, share only with
+  people who need it for a legitimate business reason, and delete it when
+  the need has passed.
 
 ## Credit / coordinated disclosure
 
