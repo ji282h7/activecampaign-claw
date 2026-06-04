@@ -1,7 +1,7 @@
 ---
 name: activecampaign-claw
 displayName: "ActiveCampaign (50+ Capabilities)"
-version: 1.9.2
+version: 1.9.3
 license: MIT-0
 author: ji282h7
 summary: "ActiveCampaign agent for marketers + sales: 50+ reports for list, campaign, automation, and pipeline analysis."
@@ -291,6 +291,7 @@ These are sub-second single-call scripts. Use them whenever the user is asking a
 | Look up a contact by ID | `scripts/contact_by_id.py <id>` |
 | Get the most recent N contacts | `scripts/contact_recent.py [--limit N]` |
 | **Most engaged / top scoring contacts** (fast) | `scripts/contact_most_engaged.py [--limit N] [--by score\|recent]` |
+| **Contacts with the most clicks / opens** (real engagement events) | `scripts/contact_engagement_leaders.py [--by clicks\|opens\|both] [--window-days N] [--limit M]` |
 | Full profile on one contact (compound) | `scripts/contact_full_profile.py --email\|--id` |
 | Look up a deal by ID | `scripts/deal_by_id.py <id>` |
 | Full context on one deal (compound) | `scripts/deal_full_context.py <id>` |
@@ -505,6 +506,7 @@ curl -s -X POST -H "Api-Token: $AC_API_TOKEN" \
     - Common question → script mapping for the most-asked patterns:
       - "Most recent / newest contacts" → `scripts/contact_recent.py`
       - "Most engaged / top scoring contacts" → `scripts/contact_most_engaged.py` (fast) or `scripts/find_hot_leads.py` (deeper composite scoring)
+      - "Contacts with the most clicks / opens" → `scripts/contact_engagement_leaders.py` (real engagement-event aggregation)
       - "Look up this email / contact" → `scripts/contact_lookup.py`
       - "Look up this deal" → `scripts/deal_by_id.py`
       - "What's the tag id for X" → `scripts/tag_lookup.py`
