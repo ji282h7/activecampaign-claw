@@ -1,19 +1,34 @@
 #!/usr/bin/env python3
 """
-export_account.py — Full account snapshot to JSON.
+account_archive.py — Point-in-time local copy of your AC account taxonomy for
+diff / audit / pre-change review use.
 
-Bundles taxonomy (lists, tags, fields, pipelines, automations), and optionally
-contacts and deals. Disaster-recovery / audit / migration / pre-change baseline.
+Bundles the structural definitions in your account (lists, tags, fields,
+pipelines, stages, automations, messages, forms, segments, webhooks) into
+a single local JSON file. Optionally widens to include contacts and deals.
+
+The output is a local file on your machine. Nothing is transmitted anywhere.
+
+Common uses:
+  - Diff "before" vs "after" a configuration change
+    (pair with `scripts/schema_diff.py`)
+  - Review your taxonomy in a text editor
+  - Provide an auditable record of what your account looked like at a moment
+
+Confirmation: when running with `--scope all` (the most data-dense option)
+the script requires `--confirm`. Lighter scopes (`taxonomy`, `contacts`,
+`deals`) run without confirmation.
 
 Usage:
-  python3 export_account.py --scope taxonomy
-  python3 export_account.py --scope all --output snap.json
+  python3 account_archive.py --scope taxonomy
+  python3 account_archive.py --scope all --confirm --output snap.json
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -31,7 +46,7 @@ def _try_paginate(client, path, key, **kwargs):
 
 def fetch(client: ACClient, scope: str) -> dict:
     out = {
-        "exported_at": datetime.now(timezone.utc).isoformat(),
+        "archived_at": datetime.now(timezone.utc).isoformat(),
         "schema_version": 1,
         "taxonomy": {
             "lists": _try_paginate(client, "lists", "lists", max_items=2000),
@@ -57,11 +72,43 @@ def fetch(client: ACClient, scope: str) -> dict:
     return out
 
 
+_CONFIRM_NOTICE = """\
+# Account archive — confirmation required for `--scope all`
+
+`--scope all` pulls the structural taxonomy AND every contact + every deal
+into a single local JSON file. On a large account that file can be tens of
+megabytes. The output is a local file on your machine — never transmitted
+anywhere — but it still contains customer data and should be treated as
+such (store securely, share only with people who need it, delete when no
+longer needed).
+
+To proceed:
+
+  python3 scripts/account_archive.py --scope all --confirm
+
+For lighter scopes that don't need confirmation:
+
+  python3 scripts/account_archive.py --scope taxonomy
+  python3 scripts/account_archive.py --scope contacts
+  python3 scripts/account_archive.py --scope deals
+"""
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Account snapshot")
-    parser.add_argument("--scope", choices=["taxonomy", "contacts", "deals", "all"], default="taxonomy")
+    parser = argparse.ArgumentParser(
+        description="Local point-in-time copy of AC taxonomy (and optionally records) for diff / audit"
+    )
+    parser.add_argument("--scope", choices=["taxonomy", "contacts", "deals", "all"],
+                        default="taxonomy")
+    parser.add_argument("--confirm", action="store_true",
+                        help="Required when --scope all is used. Other scopes don't need it.")
     parser.add_argument("--output", default=None)
     args = parser.parse_args()
+
+    # Gate the heaviest scope behind --confirm. Lighter scopes pass through.
+    if args.scope == "all" and not args.confirm:
+        print(_CONFIRM_NOTICE)
+        sys.exit(0)
 
     client = ACClient()
     data = fetch(client, args.scope)

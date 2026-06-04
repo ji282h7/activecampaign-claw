@@ -2,7 +2,7 @@
 """
 schema_diff.py — Compare two account snapshots and report taxonomy changes.
 
-Snapshots are produced by export_account.py / snapshot.py. Diffs lists, tags,
+Snapshots are produced by account_archive.py / snapshot.py. Diffs lists, tags,
 custom fields, automations (by name + status). Local-only.
 
 Usage:

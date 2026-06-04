@@ -8,8 +8,8 @@ These reports are bounded by taxonomy or campaign count, not contact count. Run 
 
 - **Taxonomy reports**: `tag_audit`, `custom_field_audit`, `list_audit`, `segment_audit`, `automation_audit`, `automation_dependency_map`, `broken_automation_detector`, `form_audit`, `webhook_audit`, `pipeline_audit`
 - **Campaign analysis**: `campaign_postmortem`, `subject_line_report`, `from_name_report`, `content_length_report`, `send_time_optimizer`, `send_frequency_report`, `monthly_performance`, `baseline_drift`, `campaign_velocity`, `link_performance`, `bounce_breakdown`
-- **Single-contact operations**: `data_subject_export`
-- **Account snapshots**: `export_account`, `schema_diff`, `snapshot`
+- **Single-contact operations**: `contact_data_export`
+- **Account snapshots**: `account_archive`, `schema_diff`, `snapshot`
 - **Headline numbers in `audit_list_health`** (uses `meta.total` rather than row scans)
 
 Calibration is taxonomy-only and finishes in ~1 minute even on 1M-contact accounts.
@@ -68,9 +68,9 @@ Scripts that already use `stream()`:
 
 **2. Scope contact-scanning reports to cohorts.** Instead of running `dedupe_contacts` against the full account, run it on a single list. Most marketing questions are naturally cohort-scoped.
 
-**3. For one-shot full scans, plan for runtime.** GDPR-style exports or full migrations: bump `--max-contacts`, run overnight, expect ~1 hour per 150k contacts.
+**3. For one-shot full scans, plan for runtime.** Full taxonomy archives: bump `--max-contacts`, run overnight, expect ~1 hour per 150k contacts.
 
-**4. Use snapshots for change detection.** `export_account.py` + `schema_diff.py` are taxonomy-only and weekly-cron-friendly even for huge accounts.
+**4. Use snapshots for change detection.** `account_archive.py` + `schema_diff.py` are taxonomy-only and weekly-cron-friendly even for huge accounts.
 
 ## What's not optimized yet
 

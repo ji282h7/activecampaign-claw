@@ -1,7 +1,7 @@
 ---
 name: activecampaign-claw
 displayName: "ActiveCampaign (50+ Capabilities)"
-version: 1.9.3
+version: 1.9.4
 license: MIT-0
 author: ji282h7
 summary: "ActiveCampaign agent for marketers + sales: 50+ reports for list, campaign, automation, and pipeline analysis."
@@ -106,12 +106,12 @@ when_to_use:
   - "find role addresses (info@, support@, etc.)"
   - "free mail vs corporate domain split"
   - "validate a CSV before importing"
-  - "export the whole AC account / take a snapshot"
+  - "archive the AC account taxonomy locally for diff / audit use"
   - "diff two account snapshots"
   - "audit webhooks / are webhook URLs reachable"
   - "unsubscribe / opt-in compliance audit"
   - "export all suppressed contacts"
-  - "GDPR data subject export for one contact"
+  - "per-contact data export"
 context:
   - "~/.activecampaign-skill/state.json"
   - "~/.activecampaign-skill/insights.md"
@@ -134,7 +134,7 @@ Direct integration with ActiveCampaign's v3 API, built to operate the way an exp
 
 **Tag / field / list / segment hygiene** — tag audit (typos, dead tags, co-occurrence consolidation), custom-field audit, per-list audit, list-overlap matrix, segment audit, form audit.
 
-**Compliance & ops** — unsubscribe / opt-in audit, suppression export, GDPR Article 15 SAR export, webhook audit, account snapshot, schema diff between snapshots.
+**Compliance & ops** — unsubscribe / opt-in audit, suppression export, Per-contact data export, webhook audit, account snapshot, schema diff between snapshots.
 
 **Sales / CRM** — overdue tasks audit, per-rep performance scoreboard (deals + tasks + notes), notes content analysis (action-item extraction, stale-note detection), saved-responses audit, B2B accounts audit (orphaned / no-pipeline / owner rollup). *(Plus+ for Tasks, Saved Responses, B2B Accounts.)*
 
@@ -172,7 +172,7 @@ Calibration, history, and any reports written via `--output` produce local files
 | `history.jsonl` | Append-only log of recipe/script runs (no contact PII; just operation metrics) | Most scripts via `log_outcome()` | Manual — see below |
 | `insights.md` | Persistent findings from prior runs | Scripts via `write_insight()` | Manual |
 | `writes.jsonl` | Audit log of POST/PUT/DELETE operations (payload hash, not payload) | `_ac_client.write()` | Manual |
-| `snapshots/*.json` | Versioned account snapshots | `snapshot.py`, `export_account.py` | Manual |
+| `snapshots/*.json` | Versioned account snapshots | `snapshot.py`, `account_archive.py` | Manual |
 
 All files can be inspected with normal text tools and deleted by removing the directory. Recommended retention: prune `history.jsonl` and snapshots every 90 days unless you need longer-term trend analysis. No data is sent off your machine.
 
@@ -372,12 +372,12 @@ These are sub-second single-call scripts. Use them whenever the user is asking a
 | Free-mail vs. corporate split | `scripts/free_vs_corporate_report.py` |
 | Validate a CSV pre-import | `scripts/import_validator.py <csv>` |
 | Snapshot the account | `scripts/snapshot.py [--scope taxonomy/contacts/deals/all]` |
-| Full account export | `scripts/export_account.py [--scope ...]` |
+| Local account archive | `scripts/account_archive.py [--scope ...]` |
 | Diff two snapshots | `scripts/schema_diff.py <a.json> <b.json>` |
 | Webhook inventory + reachability | `scripts/webhook_audit.py [--skip-probe]` |
 | Unsubscribe / opt-in compliance | `scripts/unsubscribe_audit.py` |
 | Export suppressed contacts | `scripts/suppression_export.py` |
-| GDPR Article 15 SAR for one contact | `scripts/data_subject_export.py <email>` |
+| Raw per-contact data export | `scripts/contact_data_export.py <email>` |
 
 #### Sales / CRM scripts
 
@@ -472,7 +472,7 @@ curl -s -X POST -H "Api-Token: $AC_API_TOKEN" \
 - The user asks about contacts, deals, tags, lists, pipelines, automations, or custom fields in a CRM context
 - The user wants to audit list health, find hot leads, surface slipping deals, or run a daily digest
 - The user asks about email campaign design, welcome series, re-engagement flows, or send-time optimization
-- The user mentions any of the scripts in `scripts/` (e.g. `calibrate.py`, `audit_list_health.py`, `find_hot_leads.py`, `find_slipping_deals.py`, `tag_audit.py`, `campaign_postmortem.py`, `automation_funnel.py`, `dedupe_contacts.py`, `export_account.py`, …) or `state.json`
+- The user mentions any of the scripts in `scripts/` (e.g. `calibrate.py`, `audit_list_health.py`, `find_hot_leads.py`, `find_slipping_deals.py`, `tag_audit.py`, `campaign_postmortem.py`, `automation_funnel.py`, `dedupe_contacts.py`, `account_archive.py`, …) or `state.json`
 - The user asks about email deliverability, open rates, bounce rates, or unsubscribe trends tied to their account
 - The user asks about contact-status questions (which list / tag / automation a contact is on)
 - The user asks about segmentation strategy, lead scoring, or deal pipeline management

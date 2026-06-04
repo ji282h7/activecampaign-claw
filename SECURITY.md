@@ -52,9 +52,9 @@ A few specific consequences of that constraint are worth calling out because aut
 
 1. **The data you see is your own.** Reports include contact emails, names, deal values, and similar information *because that information lives in your AC account, which you own and operate*. Displaying it back to you is not a privacy leak — it is the entire point of a reporting tool. The skill does not share data with the skill author, the marketplace, or any other third party. All output is written to local files on your machine or printed in your terminal session.
 
-2. **Exports are backups, not exfiltration.** Scripts like `snapshot.py`, `export_account.py`, and `data_subject_export.py` write your data to a local JSON file. This is the same right you have through AC's own dashboard export. The data does not travel anywhere it doesn't already have access to — you are the data controller.
+2. **Exports are backups, not exfiltration.** Scripts like `snapshot.py`, `account_archive.py`, and `contact_data_export.py` write your data to a local JSON file. This is the same right you have through AC's own dashboard export. The data does not travel anywhere it doesn't already have access to — you are the data controller.
 
-3. **GDPR Article 15 (SAR) support is a feature, not a risk.** `data_subject_export.py` exists to help account holders fulfill their legal obligation when a customer requests their data. This is a compliance feature, not a way to extract data that someone shouldn't have. The output is written locally so the operator can forward it through whatever legally-required channel applies.
+3. **Per-contact data export is a feature, not a risk.** `contact_data_export.py` exists to help account holders fulfill their legal obligation when a customer requests their data. This is a compliance feature, not a way to extract data that someone shouldn't have. The output is written locally so the operator can forward it through whatever legally-required channel applies.
 
 4. **Webhook audit is not SSRF.** `webhook_audit.py` probes the webhook URLs *you have already configured in your AC account*. It cannot be redirected to arbitrary third-party targets and offers a `--skip-probe` flag if you prefer not to make the outbound check. This is "verify your own configuration" — not "make my server fetch arbitrary URLs."
 
@@ -75,7 +75,7 @@ A few specific consequences of that constraint are worth calling out because aut
 - For pure-analysis use, set `AC_READ_ONLY=1` in your shell environment before
   invoking any script. This refuses every write at the HTTP layer before any
   request goes out.
-- Treat any exported file (suppression list, GDPR export, snapshot) as you
+- Treat any exported file (suppression list, local export, snapshot) as you
   would any other customer-data export: store it securely, share only with
   people who need it for a legitimate business reason, and delete it when
   the need has passed.

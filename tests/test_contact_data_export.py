@@ -1,10 +1,10 @@
-"""Tests for data_subject_export.fetch() with mocked client."""
+"""Tests for contact_data_export.fetch() with mocked client."""
 from __future__ import annotations
 
 from unittest.mock import patch
 
 import _ac_client
-import data_subject_export
+import contact_data_export
 import pytest
 
 
@@ -31,7 +31,7 @@ def test_collects_all_per_contact_resources():
     c.get = fake_get
     c.paginate = fake_paginate
 
-    out = data_subject_export.fetch(c, "subject@example.com")
+    out = contact_data_export.fetch(c, "subject@example.com")
     assert out["contact"]["id"] == "42"
     for k in ("fieldValues", "contactTags", "contactLists", "contactAutomations"):
         assert k in out
@@ -43,7 +43,7 @@ def test_missing_contact_raises():
     c.get = lambda path, params=None: {"contacts": []}
     c.paginate = lambda *a, **kw: []
     with pytest.raises(SystemExit):
-        data_subject_export.fetch(c, "missing@example.com")
+        contact_data_export.fetch(c, "missing@example.com")
 
 
 def test_deals_403_handled_cleanly():
@@ -59,5 +59,5 @@ def test_deals_403_handled_cleanly():
 
     c.get = fake_get
     c.paginate = fake_paginate
-    out = data_subject_export.fetch(c, "x@y.com")
+    out = contact_data_export.fetch(c, "x@y.com")
     assert out["deals"] == "Deals feature not enabled"

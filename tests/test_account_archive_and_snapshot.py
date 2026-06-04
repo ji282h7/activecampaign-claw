@@ -1,11 +1,11 @@
-"""Tests for export_account.fetch() and snapshot wrappers using mocked client."""
+"""Tests for account_archive.fetch() and snapshot wrappers using mocked client."""
 from __future__ import annotations
 
 import json
 from unittest.mock import patch
 
 import _ac_client
-import export_account
+import account_archive
 
 
 def _mock_client():
@@ -25,7 +25,7 @@ def _mock_client():
 
 def test_export_taxonomy_scope_collects_taxonomy_keys():
     c = _mock_client()
-    out = export_account.fetch(c, "taxonomy")
+    out = account_archive.fetch(c, "taxonomy")
     tax = out["taxonomy"]
     for key in ("lists", "tags", "fields", "automations", "messages", "forms", "segments", "webhooks"):
         assert key in tax
@@ -36,7 +36,7 @@ def test_export_taxonomy_scope_collects_taxonomy_keys():
 
 def test_export_all_scope_includes_contacts_and_deals():
     c = _mock_client()
-    out = export_account.fetch(c, "all")
+    out = account_archive.fetch(c, "all")
     assert "contacts" in out
     assert "deals" in out
     assert "fieldValues" in out
@@ -51,7 +51,7 @@ def test_try_paginate_swallows_403_404():
         return [{"id": "x"}]
 
     c.paginate = paginate_403  # type: ignore
-    out = export_account.fetch(c, "taxonomy")
+    out = account_archive.fetch(c, "taxonomy")
     assert out["taxonomy"]["pipelines"] == []
     assert out["taxonomy"]["stages"] == []
     assert len(out["taxonomy"]["lists"]) == 1
@@ -59,7 +59,7 @@ def test_try_paginate_swallows_403_404():
 
 def test_export_writes_json_to_file(tmp_path, monkeypatch):
     c = _mock_client()
-    out = export_account.fetch(c, "taxonomy")
+    out = account_archive.fetch(c, "taxonomy")
     p = tmp_path / "snap.json"
     p.write_text(json.dumps(out, default=str))
     loaded = json.loads(p.read_text())

@@ -1,17 +1,24 @@
 #!/usr/bin/env python3
 """
-tag_merge.py — Merge a source tag into a canonical target tag.
+tag_merge.py — Hygiene helper: consolidate two tags that semantically mean
+the same thing into one canonical tag.
 
-Re-tags every contact that has the source tag with the target tag (if not
-already applied), removes the source tag from all those contacts, then
-deletes the source tag itself.
+Use cases: cleaning up case-mismatch duplicates (`Customer` vs `customer`),
+separator typos (`webinar-attendee` vs `webinar_attendee`), or accidental
+re-creation of an existing tag during an import. Not intended for bulk
+re-tagging campaigns — for that, build a segment and run an automation in
+the AC UI.
 
-Safety:
-  - Dry-run by default: prints the plan and exits without changes.
-  - --confirm is required for execution.
-  - Refuses to delete the source tag if any automation or segment references
-    it by name. Use --force-with-refs to override AFTER manually updating
-    those references in the AC UI.
+Safety layers (all enabled by default):
+  - Dry-run by default. Prints the plan and exits without any change.
+  - `--confirm` is required to perform any modification.
+  - Refuses to operate if a source-tag reference is found in any active
+    automation or segment. Use `--force-with-refs` ONLY after manually
+    updating those references in the AC UI first.
+  - Refuses to run at all when the `AC_READ_ONLY=1` environment variable is
+    set.
+  - Every modification is recorded in the local write audit log at
+    `~/.activecampaign-skill/writes.jsonl` (payload SHA, not payload).
 
 Usage:
   # Plan only (no changes)
@@ -247,16 +254,33 @@ def _summarize_contact_tag_pairs(plan: dict) -> dict:
     return dict(counts)
 
 
+_SAFETY_BANNER = (
+    "──────────────────────────────────────────────────────────────────\n"
+    " tag-merge hygiene helper — dry-run by default, no changes made\n"
+    " unless --confirm is passed. Even with --confirm, refuses to\n"
+    " delete a tag still referenced by any active automation or segment.\n"
+    "──────────────────────────────────────────────────────────────────"
+)
+
+
 def main():
-    parser = argparse.ArgumentParser(description="Merge two ActiveCampaign tags")
-    parser.add_argument("--source", required=True, help="Tag to merge from (will be deleted)")
-    parser.add_argument("--target", required=True, help="Canonical tag to merge into")
+    parser = argparse.ArgumentParser(
+        description="Hygiene helper: consolidate two semantically-equivalent tags"
+    )
+    parser.add_argument("--source", required=True,
+                        help="Tag to merge from (will be deleted with --confirm)")
+    parser.add_argument("--target", required=True,
+                        help="Canonical tag to merge into")
     parser.add_argument("--confirm", action="store_true",
                         help="Required to actually execute. Without it, prints the plan only.")
     parser.add_argument("--force-with-refs", action="store_true",
                         help="Proceed even if automation or segment references exist")
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     args = parser.parse_args()
+
+    # Always show the banner on stderr so the safety story is visible whether
+    # the script is invoked from a terminal, a wrapper, or an agent harness.
+    print(_SAFETY_BANNER, file=sys.stderr)
 
     client = ACClient()
     data = fetch_data(client)

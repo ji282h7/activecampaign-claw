@@ -76,7 +76,7 @@ ActiveCampaign already covers the core capabilities — sends, automations, lead
 ### Compliance & ops
 - **Unsubscribe / opt-in audit** — every campaign has a working unsub link, every form mentions opt-in
 - **Suppression export** — all unsubs + bounces with timestamps (for compliance audits, ESP migration)
-- **GDPR Article 15 SAR** — full export of everything AC has on one contact
+- **per-contact data export** — full export of everything AC has on one contact
 - **Webhook audit** — inventory + reachability probe of every configured webhook
 - **Account snapshot** — full taxonomy export to JSON, versioned weekly via cron
 - **Schema diff** — what changed between two snapshots (added/removed/renamed)
