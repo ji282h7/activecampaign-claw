@@ -130,6 +130,92 @@ def test_non_403_error_still_propagates(monkeypatch):
         )
 
 
+def test_args_progress_emits_to_stderr_when_tty(monkeypatch, capsys):
+    """args.progress should write `  → msg\\n` to stderr when stderr is a tty
+    and --quiet wasn't passed."""
+    monkeypatch.setenv("AC_API_URL", "https://test.api-us1.com")
+    monkeypatch.setenv("AC_API_TOKEN", "tok")
+    monkeypatch.setattr(sys, "argv", _build_argv())
+    # Force isatty to True so the progress callback is the real emitter
+    monkeypatch.setattr(sys.stderr, "isatty", lambda: True, raising=False)
+    monkeypatch.delenv("TELEGRAM_QUIET", raising=False)
+
+    def fetch(client, args):
+        args.progress("doing thing 1")
+        args.progress("doing thing 2")
+        return {}
+
+    def analyze(data):
+        return {}
+
+    def render(report):
+        return "ok"
+
+    cli_main(
+        description="x",
+        fetch_data=fetch,
+        analyze=analyze,
+        render_markdown=render,
+    )
+    captured = capsys.readouterr()
+    assert "doing thing 1" in captured.err
+    assert "doing thing 2" in captured.err
+    # Each progress line gets the arrow prefix
+    assert captured.err.count("→") == 2
+
+
+def test_args_progress_silent_when_quiet_flag(monkeypatch, capsys):
+    monkeypatch.setenv("AC_API_URL", "https://test.api-us1.com")
+    monkeypatch.setenv("AC_API_TOKEN", "tok")
+    monkeypatch.setattr(sys, "argv", _build_argv("--quiet"))
+    monkeypatch.setattr(sys.stderr, "isatty", lambda: True, raising=False)
+
+    def fetch(client, args):
+        args.progress("should not appear")
+        return {}
+
+    cli_main(description="x", fetch_data=fetch,
+             analyze=lambda d: {}, render_markdown=lambda r: "ok")
+    captured = capsys.readouterr()
+    assert "should not appear" not in captured.err
+
+
+def test_args_progress_silent_when_telegram_quiet_env(monkeypatch, capsys):
+    """TELEGRAM_QUIET=1 suppresses progress without the user passing --quiet."""
+    monkeypatch.setenv("AC_API_URL", "https://test.api-us1.com")
+    monkeypatch.setenv("AC_API_TOKEN", "tok")
+    monkeypatch.setenv("TELEGRAM_QUIET", "1")
+    monkeypatch.setattr(sys, "argv", _build_argv())
+    monkeypatch.setattr(sys.stderr, "isatty", lambda: True, raising=False)
+
+    def fetch(client, args):
+        args.progress("should not appear")
+        return {}
+
+    cli_main(description="x", fetch_data=fetch,
+             analyze=lambda d: {}, render_markdown=lambda r: "ok")
+    captured = capsys.readouterr()
+    assert "should not appear" not in captured.err
+
+
+def test_args_progress_silent_when_stderr_not_tty(monkeypatch, capsys):
+    """Pipe / capture / non-interactive shell auto-suppresses progress noise."""
+    monkeypatch.setenv("AC_API_URL", "https://test.api-us1.com")
+    monkeypatch.setenv("AC_API_TOKEN", "tok")
+    monkeypatch.delenv("TELEGRAM_QUIET", raising=False)
+    monkeypatch.setattr(sys, "argv", _build_argv())
+    # pytest captures stderr by default — isatty returns False naturally
+
+    def fetch(client, args):
+        args.progress("should not appear")
+        return {}
+
+    cli_main(description="x", fetch_data=fetch,
+             analyze=lambda d: {}, render_markdown=lambda r: "ok")
+    captured = capsys.readouterr()
+    assert "should not appear" not in captured.err
+
+
 def test_history_recipe_logs_entry(monkeypatch, tmp_state_dir, capsys):
     """tmp_state_dir patches STATE_DIR + HISTORY_FILE for the underlying writer."""
     monkeypatch.setenv("AC_API_URL", "https://test.api-us1.com")

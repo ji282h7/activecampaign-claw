@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import inspect
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any, Callable
@@ -63,9 +64,29 @@ def cli_main(
     parser.add_argument("--format", choices=["markdown", "json"], default="markdown")
     parser.add_argument("--output", default=None,
                         help="Write the report to this path instead of stdout")
+    parser.add_argument("--quiet", action="store_true",
+                        help="Suppress progress messages on stderr (default on for "
+                             "TELEGRAM_QUIET=1 or when stderr isn't a tty)")
     if add_arguments is not None:
         add_arguments(parser)
     args = parser.parse_args()
+
+    # Bind a progress callable onto the args namespace. Scripts that want to
+    # emit per-step progress can call `args.progress("Pulling tags...")` and
+    # the line goes to stderr (or nowhere, if --quiet). Scripts that don't
+    # use it pay nothing.
+    quiet = (
+        args.quiet
+        or os.environ.get("TELEGRAM_QUIET") == "1"
+        or not sys.stderr.isatty()
+    )
+    if quiet:
+        args.progress = lambda _msg: None
+    else:
+        def _emit(msg: str) -> None:
+            sys.stderr.write(f"  → {msg}\n")
+            sys.stderr.flush()
+        args.progress = _emit
 
     client = ACClient()
 

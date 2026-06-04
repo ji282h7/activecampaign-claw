@@ -39,14 +39,14 @@ def _resolve_contact(client: ACClient, args) -> dict:
 
 
 def fetch_data(client: ACClient, args) -> dict:
+    args.progress("Resolving contact...")
     contact = _resolve_contact(client, args)
     if contact.get("not_found"):
         return {"contact": None}
     cid = contact["id"]
     filters = {"filters[contact]": cid}
 
-    # Pull six sub-resources concurrently. Per-endpoint 403 errors become
-    # sentinel dicts so a missing Deals plan doesn't break the whole report.
+    args.progress("Fetching tags, lists, automations, fields, notes, deals in parallel...")
     bulk = client.fetch_many([
         ("contactTags",        "contactTags",        filters, 200),
         ("contactLists",       "contactLists",       filters, 200),
@@ -55,6 +55,7 @@ def fetch_data(client: ACClient, args) -> dict:
         ("notes",              "notes",              filters, 200),
         ("deals",              "deals",              filters, 200),
     ])
+    args.progress("Assembling report...")
     return {"contact": contact, "bulk": bulk}
 
 

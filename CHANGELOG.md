@@ -4,6 +4,16 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] — 2026-06-04
+
+### Added
+- `cli_main()` now exposes `args.progress(msg)` — a callable scripts can invoke to emit per-step progress lines to stderr. Auto-silenced in three cases: `--quiet` flag, `TELEGRAM_QUIET=1` env var, or when stderr isn't a tty (the common case when output is piped or captured by a Telegram bridge).
+- Progress wired into `tag_audit.py` (streaming pair count) and `contact_full_profile.py` (parallel sub-resource fetches).
+- 4 new unit tests covering the four progress modes (tty-emits, `--quiet`-silences, `TELEGRAM_QUIET=1`-silences, non-tty-silences).
+
+### Why
+- Telegram users were seeing tool-use breadcrumbs and stderr noise pollute their replies. Progress was always there in some scripts via raw `sys.stderr.write` calls, but inconsistent and unsuppressable. The new centralized callback makes "show progress" / "stay silent" a per-invocation choice with sensible defaults.
+
 ## [1.8.0] — 2026-06-04
 
 ### Added

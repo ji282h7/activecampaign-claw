@@ -1,7 +1,7 @@
 ---
 name: activecampaign-claw
 displayName: "ActiveCampaign (50+ Capabilities)"
-version: 1.8.0
+version: 1.9.0
 license: MIT-0
 author: ji282h7
 summary: "ActiveCampaign agent for marketers + sales: 50+ reports for list, campaign, automation, and pipeline analysis."

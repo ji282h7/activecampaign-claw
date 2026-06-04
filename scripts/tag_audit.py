@@ -20,24 +20,35 @@ from collections import Counter, defaultdict
 from _ac_client import ACClient, cli_main
 
 
-def fetch_data(client: ACClient, max_contact_tags: int = 50000) -> dict:
+def fetch_data(client: ACClient, max_contact_tags: int = 50000,
+               progress=None) -> dict:
     """Pull taxonomy + stream-aggregate the contact-tag link table.
 
     Streaming the contact-tag pairs (rather than materializing the full list)
     keeps memory bounded to the pre-aggregated structures, which are typically
     1–2 orders of magnitude smaller than the raw record stream on big accounts.
     """
+    if progress is None:
+        def progress(_msg):
+            return None
+    progress("Pulling tag definitions...")
     tags = client.paginate("tags", "tags", max_items=5000)
 
+    progress(f"Streaming contact-tag pairs (cap {max_contact_tags:,})...")
     tag_count: Counter = Counter()
     contact_tag_pairs: dict[str, set[str]] = defaultdict(set)
+    seen = 0
     for x in client.stream("contactTags", "contactTags", max_items=max_contact_tags):
         tag_id = str(x.get("tag"))
         contact_id = str(x.get("contact"))
         if tag_id and contact_id:
             tag_count[tag_id] += 1
             contact_tag_pairs[contact_id].add(tag_id)
+        seen += 1
+        if seen % 5000 == 0:
+            progress(f"  ...{seen:,} pairs processed")
 
+    progress("Pulling automations + segments for dead-tag check...")
     automations = client.paginate("automations", "automations", max_items=2000)
     segments = client.paginate("segments", "segments", max_items=2000)
     return {
@@ -172,7 +183,7 @@ def _add_args(parser):
 
 
 def _fetch(client, args):
-    return fetch_data(client, max_contact_tags=args.max_items)
+    return fetch_data(client, max_contact_tags=args.max_items, progress=args.progress)
 
 
 def _analyze(data, args):
