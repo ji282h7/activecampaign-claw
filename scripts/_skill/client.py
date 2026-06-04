@@ -100,12 +100,14 @@ class ACClient:
     MIN_REQUEST_INTERVAL = 1.0 / MAX_REQUESTS_PER_SEC  # 0.2s between requests
 
     def __init__(self, base_url: str | None = None, token: str | None = None):
-        url = base_url or os.environ.get("AC_API_URL", "")
-        tok = token or os.environ.get("AC_API_TOKEN", "")
+        from _skill.secrets import get_credential
+        url = base_url or get_credential("AC_API_URL") or ""
+        tok = token or get_credential("AC_API_TOKEN") or ""
         if not url or not tok:
             sys.stderr.write(
                 "ERROR: AC_API_URL and AC_API_TOKEN must be set "
-                "(as env vars or constructor args).\n"
+                "(as env vars, OS keychain entries, or constructor args).\n"
+                "Run `python3 scripts/auth.py status` to see what's configured.\n"
             )
             sys.exit(1)
         if not url.startswith("https://"):

@@ -53,6 +53,15 @@ from _skill.schemas import (
     User,
 )
 
+# Credential resolution (env var first, OS keychain second)
+from _skill.secrets import (
+    delete_credential,
+    describe_sources,
+    get_credential,
+    has_keyring,
+    set_credential,
+)
+
 # State file paths + load/save/age helpers + env var helper
 from _skill.state import (
     HISTORY_FILE,
@@ -80,6 +89,11 @@ __all__ = [
     "User",
     "WriteCapExceededError",
     "cli_main",
+    "delete_credential",
+    "describe_sources",
+    "get_credential",
+    "has_keyring",
+    "set_credential",
     "HISTORY_FILE",
     "INSIGHTS_FILE",
     "STATE_DIR",

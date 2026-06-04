@@ -40,7 +40,7 @@ If the skill doesn't appear in `openclaw skills list`, the install didn't regist
 
 ## Step 3: Set credentials
 
-The skill reads two env vars: `AC_API_URL` and `AC_API_TOKEN`. Pick the option that matches how you run things.
+The skill reads `AC_API_URL` and `AC_API_TOKEN`. It checks environment variables first, then the OS keychain (if `keyring` is installed). Pick the option that matches how you run things.
 
 ### Option A — OpenClaw config (recommended)
 
@@ -76,6 +76,23 @@ Reload your shell:
 ```bash
 source ~/.zshrc   # or: source ~/.bashrc
 ```
+
+### Option C — OS keychain (optional)
+
+If you'd rather not have the token in plaintext on disk, install the `keyring` package and store credentials in your OS keychain (macOS Keychain, Windows Credential Manager, or libsecret on Linux).
+
+```bash
+pip install keyring
+python3 scripts/auth.py set "https://YOURACCOUNT.api-us1.com" "YOUR-TOKEN-HERE"
+```
+
+Verify with:
+
+```bash
+python3 scripts/auth.py status
+```
+
+The skill checks env vars first, then the keychain. If you set both, env vars win — handy for testing against a sandbox without disturbing your production token.
 
 Verify:
 

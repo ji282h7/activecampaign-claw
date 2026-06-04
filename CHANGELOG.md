@@ -4,6 +4,19 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] — 2026-06-03
+
+### Added
+- OS keychain support for `AC_API_URL` and `AC_API_TOKEN` via the optional `keyring` package. Without `keyring` installed, the skill continues to work exactly as before.
+- `_skill/secrets.py` — credential resolver that checks env vars first, then the keychain. Env vars always win when both are set (so sandbox testing isn't disrupted by production credentials in the keychain).
+- `scripts/auth.py` — manage credentials in the OS keychain: `status`, `set <url> <token>`, `set-url <url>`, `set-token <token>`, `clear`. Friendly handling for the macOS Keychain non-interactive write-error case.
+- Optional `[keychain]` extra in `pyproject.toml` — install with `pip install 'activecampaign-claw[keychain]'` or directly `pip install keyring`.
+- 10 new unit tests covering env-vs-keychain precedence, graceful degradation when `keyring` isn't installed, empty-env fallthrough, and `describe_sources` reporting.
+
+### Changed
+- `ACClient.__init__` — error message now points to `python3 scripts/auth.py status` so users can diagnose where (or whether) credentials are configured.
+- INSTALL.md — added "Option C — OS keychain" alongside the existing env var and OpenClaw config paths.
+
 ## [1.5.1] — 2026-06-03
 
 ### Changed
