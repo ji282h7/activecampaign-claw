@@ -182,3 +182,38 @@ class TestLastCampaign:
         assert r.get("found") is False
         md = last_campaign.render_markdown(r)
         assert "No sent campaigns found" in md
+
+
+class TestContactMostEngaged:
+    def test_default_by_score(self):
+        import contact_most_engaged
+        data = {
+            "contacts": [
+                {"id": "1", "email": "a@x.co", "firstName": "Ada",
+                 "lastName": "L", "orgname": "Acme", "score": "92",
+                 "mdate": "2026-06-01", "cdate": "2026-05-01"},
+                {"id": "2", "email": "b@x.co", "firstName": "B",
+                 "lastName": "", "orgname": "", "score": "75",
+                 "mdate": "2026-05-20", "cdate": "2026-04-15"},
+            ],
+            "by": "score",
+            "limit": 5,
+        }
+        r = contact_most_engaged.analyze(data)
+        assert r["by"] == "score"
+        assert len(r["contacts"]) == 2
+        assert r["contacts"][0]["score"] == "92"
+
+    def test_by_recent_label(self):
+        import contact_most_engaged
+        md = contact_most_engaged.render_markdown({
+            "by": "recent", "limit": 3, "contacts": []
+        })
+        assert "by last activity" in md
+
+    def test_empty_renders_placeholder(self):
+        import contact_most_engaged
+        md = contact_most_engaged.render_markdown({
+            "by": "score", "limit": 5, "contacts": []
+        })
+        assert "_no contacts_" in md

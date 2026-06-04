@@ -4,6 +4,21 @@ All notable changes to this skill are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] — 2026-06-04
+
+### Added
+- 4 new scripts that fan multi-endpoint reads out in parallel via `fetch_many`:
+  - `contact_most_engaged.py` — top N contacts by score (default) or by recent activity (`--by recent`). Single API call. Plugs the gap that was previously triggering inline-Python fallbacks for "most engaged" questions.
+  - `contact_full_profile.py --email|--id` — one report with contact + tags + lists + automations + custom fields + deals + notes, all pulled concurrently. ~4–5s instead of 6 serial script invocations.
+  - `deal_full_context.py <id>` — deal + contact + tasks + notes + custom fields in one report.
+  - `automation_deep_dive.py <id> [--max-enrollments N]` — automation metadata + per-step funnel + enrollment status breakdown.
+- 10 new unit tests + 16 smoke tests covering analyze + render shapes and the per-endpoint 403 sentinel handling.
+
+### Changed
+- **Critical operating rule #13 tightened** — inline `python3 -c` / `python3 - <<'PY'` heredocs are now explicitly **forbidden**, not just discouraged. The previous wording said "prefer the named scripts," which the agent was interpreting as "OK to write ad-hoc Python when a script doesn't perfectly match." Tightened to: never write inline Python; if no exact-match script exists, run the closest one. The Telegram tool-use breadcrumb leaks heredoc bodies verbatim to the user — using named scripts keeps the breadcrumb to one short line.
+- Rule #13 now includes a common-question → script mapping for the most-asked patterns (`contact_recent`, `contact_most_engaged`, `contact_lookup`, etc.).
+- SKILL.md "Quick lookups" decision-tree table extended with the new compound scripts.
+
 ## [1.7.0] — 2026-06-04
 
 ### Added
